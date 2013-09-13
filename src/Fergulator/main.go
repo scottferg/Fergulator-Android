@@ -62,7 +62,7 @@ const fragShaderSrcDef = `
 
 	void main() {
 		vec4 c = texture2D(texture, texCoord);
-		gl_FragColor = vec4(c.a, c.b, c.g, c.r);
+		gl_FragColor = vec4(c.a, c.b, c.g, 1.0);
 	}
 `
 
@@ -244,8 +244,7 @@ func (game *game) drawFrame() {
 	C.glBindTexture(C.GL_TEXTURE_2D, game.texture)
 
 	if videoStream != nil {
-		select {
-		case bmp := <-videoStream:
+		if bmp := <-videoStream; bmp != nil {
 			C.glTexImage2D(C.GL_TEXTURE_2D, 0, C.GL_RGBA, 240, 224, 0, C.GL_RGBA, C.GL_UNSIGNED_BYTE, unsafe.Pointer(&bmp[0]))
 		}
 	}
