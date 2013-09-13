@@ -24,7 +24,7 @@ type androidWriter struct {
 func (aw *androidWriter) Write(p []byte) (n int, err error) {
 	n = len(p)
 	err = nil
-	for nlidx := bytes.IndexByte(p, '\n'); nlidx != -1; nlidx = bytes.IndexByte(p, '\n'){
+	for nlidx := bytes.IndexByte(p, '\n'); nlidx != -1; nlidx = bytes.IndexByte(p, '\n') {
 		aw.buf = append(aw.buf, p[:nlidx]...)
 		p = p[nlidx+1:]
 		aw.buf = append(aw.buf, 0)

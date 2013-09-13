@@ -5,7 +5,7 @@ set -e
 if [ -e bin/linux_arm/Fergulator ]; then rm bin/linux_arm/Fergulator; fi
 
 CC="$NDK_ROOT/bin/arm-linux-androideabi-gcc"
-CC=$CC GOPATH="`pwd`:$GOPATH" GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 $GO_ANDROID/bin/go install $GOFLAGS -v -ldflags="-android -shared -extld $CC -extldflags '-march=armv7-a -mfloat-abi=softfp -mfpu=vfpv3-d16'" -tags android Fergulator
+CC=$CC GOPATH="`pwd`:$GOPATH" GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 $GOROOT/bin/go install $GOFLAGS -v -ldflags="-android -shared -extld $CC -extldflags '-march=armv7-a -mfloat-abi=softfp -mfpu=vfpv3-d16'" -tags android Fergulator
 
 if [ "$?" -eq 0 ]; then
     echo "GO BUILD OK."

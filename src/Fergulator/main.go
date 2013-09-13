@@ -13,19 +13,19 @@ import "C"
 
 import (
 	"fmt"
+	"github.com/scottferg/Fergulator/nes"
 	"log"
 	"math"
 	"runtime"
 	"sync"
 	"unsafe"
-
 )
 
 var time float64
 
 type gamerom struct {
-	name    string
-	bytes   []byte
+	name  string
+	bytes []byte
 }
 
 type game struct {
@@ -33,15 +33,13 @@ type game struct {
 	texture             C.GLuint
 	width, height       int
 	offsetUni, colorUni int
-	textureUni int
+	textureUni          int
 
 	mu               sync.Mutex // Protects offsetX, offsetY
 	offsetX, offsetY float32
 
-	touching         bool
-	touchX, touchY   float32
-
-    ctrl             *Controller
+	touching       bool
+	touchX, touchY float32
 }
 
 var g game
@@ -211,8 +209,8 @@ func (game *game) initGL() {
 
 	checkGLError()
 
-	C.glTexParameteri(C.GL_TEXTURE_2D, C.GL_TEXTURE_MIN_FILTER, C.GL_NEAREST )
-	C.glTexParameteri(C.GL_TEXTURE_2D, C.GL_TEXTURE_MAG_FILTER, C.GL_NEAREST )
+	C.glTexParameteri(C.GL_TEXTURE_2D, C.GL_TEXTURE_MIN_FILTER, C.GL_NEAREST)
+	C.glTexParameteri(C.GL_TEXTURE_2D, C.GL_TEXTURE_MAG_FILTER, C.GL_NEAREST)
 
 	checkGLError()
 
@@ -262,12 +260,12 @@ func (game *game) onTouch(action int, x, y float32) {
 	switch action {
 	case C.AMOTION_EVENT_ACTION_UP:
 		game.touching = false
-		g.ctrl.KeyUp(ButtonStart, 0)
+		nes.Pads[0].KeyUp(nes.ButtonStart, 0)
 		log.Println("<<<START>>>")
 	case C.AMOTION_EVENT_ACTION_DOWN:
 		game.touching = true
 		game.touchX, game.touchY = x, y
-		g.ctrl.KeyDown(ButtonStart, 0)
+		nes.Pads[0].KeyDown(nes.ButtonStart, 0)
 		log.Println(">>>START<<<")
 
 	case C.AMOTION_EVENT_ACTION_MOVE:
@@ -307,7 +305,6 @@ func Java_com_vokal_afergulator_Engine_init(env *C.JNIEnv, clazz C.jclass) {
 		}
 	}()
 	g.initGL()
-	g.ctrl = NewController()
 }
 
 //export Java_com_vokal_afergulator_Engine_resize
@@ -332,14 +329,12 @@ func Java_com_vokal_afergulator_Engine_onTouch(env *C.JNIEnv, clazz C.jclass, ac
 
 //export Java_com_vokal_afergulator_Engine_keyEvent
 func Java_com_vokal_afergulator_Engine_keyEvent(env *C.JNIEnv, clazz C.jclass, key C.jint, event C.jint, player C.jint) {
-	if g.ctrl != nil {
-		if (event == 1) {
-			g.ctrl.KeyDown(int(key), int(player))
-			log.Printf("key down: %v\n", key)
-		} else {
-			g.ctrl.KeyUp(int(key), int(player))
-			log.Printf("key up: %v\n", key)
-		}
+	if event == 1 {
+		nes.Pads[0].KeyDown(int(key), int(player))
+		log.Printf("key down: %v\n", key)
+	} else {
+		nes.Pads[0].KeyUp(int(key), int(player))
+		log.Printf("key up: %v\n", key)
 	}
 }
 
@@ -371,5 +366,3 @@ func GetRom(bytes *C.jbyte, length C.jsize) gamerom {
 
 	return gr
 }
-
-
