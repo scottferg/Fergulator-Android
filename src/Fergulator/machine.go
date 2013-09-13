@@ -1,8 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"github.com/scottferg/Fergulator/nes"
+	"log"
 )
 
 var (
@@ -10,6 +10,8 @@ var (
 )
 
 func RunEmulator(r gamerom) chan []uint32 {
+	nes.AudioEnabled = false
+
 	videoTick, _, err := nes.Init(r.bytes, func(i int16) {}, func(ev interface{}) int {
 		if k, ok := ev.(int); ok {
 			return k
@@ -18,7 +20,7 @@ func RunEmulator(r gamerom) chan []uint32 {
 		return -1
 	})
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 	}
 
 	// Main runloop, in a separate goroutine so that
