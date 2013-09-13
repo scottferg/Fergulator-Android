@@ -63,7 +63,7 @@ const fragShaderSrcDef = `
 
 	void main() {
 		vec4 c = texture2D(texture, texCoord);
-		gl_FragColor = vec4(c.b, c.g, c.r, c.a);
+		gl_FragColor = vec4(c.a, c.b, c.g, c.r);
 	}
 `
 
