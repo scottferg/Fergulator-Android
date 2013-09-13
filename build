@@ -1,0 +1,39 @@
+#!/bin/bash
+
+set -e
+
+if [ -e bin/linux_arm/Fergulator ]; then rm bin/linux_arm/Fergulator; fi
+
+CC="$NDK_ROOT/bin/arm-linux-androideabi-gcc"
+CC=$CC GOPATH="`pwd`:$GOPATH" GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 $GO_ANDROID/bin/go install $GOFLAGS -v -ldflags="-android -shared -extld $CC -extldflags '-march=armv7-a -mfloat-abi=softfp -mfpu=vfpv3-d16'" -tags android Fergulator
+
+if [ "$?" -eq 0 ]; then
+    echo "GO BUILD OK."
+
+    #mkdir -p android/libs/armeabi
+    mkdir -p android/libs/armeabi-v7a
+    #mkdir -p android/obj/local/armeabi-v7a
+
+    #cp bin/linux_arm/Fergulator android/libs/armeabi/libFergulator.so
+    cp bin/linux_arm/Fergulator android/libs/armeabi-v7a/libFergulator.so
+    #cp bin/linux_arm/Fergulator android/obj/local/armeabi-v7a/libFergulator.so
+
+    ant -f android/build.xml clean debug install > android/.build_log
+    adb shell am start -n "com.vokal.afergulator/com.vokal.afergulator.MainActivity" -a android.intent.action.MAIN -c android.intent.category.LAUNCHER
+fi
+
+
+##  x86 attempt
+
+#CC="$NDK/ndk-toolchain-x86/bin/i686-linux-android-gcc"
+#CC=$CC GOPATH="`pwd`:$GOPATH" GOOS=linux GOARCH=amd64 CGO_ENABLED=1 $GO_ANDROID/bin/go install $GOFLAGS -v -ldflags="-android -shared -extld $CC -extldflags '-march=armv7-a -mfloat-abi=softfp -mfpu=vfpv3-d16'" -tags android Fergulator
+
+#if [ "$?" -eq 0 ]; then
+#    echo "GO BUILD OK."
+
+#    mkdir -p android/libs/x86
+#    mkdir -p android/obj/local/x86
+
+#   cp bin/linux_x86/Fergulator android/libs/x86/libFergulator.so
+#   cp bin/linux_x86/Fergulator android/obj/local/x86/libFergulator.so
+#fi
