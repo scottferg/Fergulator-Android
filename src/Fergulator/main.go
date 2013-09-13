@@ -15,7 +15,6 @@ import (
 	"fmt"
 	"github.com/scottferg/Fergulator/nes"
 	"log"
-	"math"
 	"runtime"
 	"sync"
 	"unsafe"
@@ -236,8 +235,6 @@ func (game *game) initGL() {
 
 func (game *game) drawFrame() {
 	time += .05
-	color := (C.GLclampf(math.Sin(time)) + 1) * .5
-	fmt.Print(color)
 
 	C.glClear(C.GL_COLOR_BUFFER_BIT | C.GL_DEPTH_BUFFER_BIT)
 
@@ -261,12 +258,10 @@ func (game *game) onTouch(action int, x, y float32) {
 	case C.AMOTION_EVENT_ACTION_UP:
 		game.touching = false
 		nes.Pads[0].KeyUp(nes.ButtonStart, 0)
-		log.Println("<<<START>>>")
 	case C.AMOTION_EVENT_ACTION_DOWN:
 		game.touching = true
 		game.touchX, game.touchY = x, y
 		nes.Pads[0].KeyDown(nes.ButtonStart, 0)
-		log.Println(">>>START<<<")
 
 	case C.AMOTION_EVENT_ACTION_MOVE:
 		if !game.touching {
@@ -331,10 +326,8 @@ func Java_com_vokal_afergulator_Engine_onTouch(env *C.JNIEnv, clazz C.jclass, ac
 func Java_com_vokal_afergulator_Engine_keyEvent(env *C.JNIEnv, clazz C.jclass, key C.jint, event C.jint, player C.jint) {
 	if event == 1 {
 		nes.Pads[0].KeyDown(int(key), int(player))
-		log.Printf("key down: %v\n", key)
 	} else {
 		nes.Pads[0].KeyUp(int(key), int(player))
-		log.Printf("key up: %v\n", key)
 	}
 }
 
