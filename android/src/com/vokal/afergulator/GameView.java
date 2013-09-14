@@ -20,8 +20,7 @@ import org.apache.commons.io.IOUtils;
  * Created by Nick on 9/6/13.
  */
 public class GameView extends GLSurfaceView
-        implements GLSurfaceView.Renderer,
-        View.OnTouchListener, View.OnLongClickListener {
+        implements GLSurfaceView.Renderer {
 
     public GameView(Context context) {
         super(context);
@@ -37,15 +36,15 @@ public class GameView extends GLSurfaceView
         setupContextPreserve();
         setEGLContextClientVersion(2);
         setRenderer(this);
-        setOnTouchListener(this);
     }
 
-    public void loadGame(InputStream is, String s) throws IOException {
+    public void loadGame(InputStream is, String name) throws IOException {
         byte[] rom = IOUtils.toByteArray(is);
         byte[] start = Arrays.copyOfRange(rom, 0, 3);
+        Log.d("GameView", "ROM NAME: " + name);
         Log.d("GameView", "ROM TYPE: " + new String(start));
-        Log.d("ENGINE", String.format("ROM SIZE: %d kb", rom.length / 1024));
-        Engine.loadRom(rom, rom.length);
+        Log.d("GameView", "ROM SIZE: %d kb" + rom.length / 1024);
+        Engine.loadRom(rom, name);
     }
 
     private void setupContextPreserve() {
@@ -71,19 +70,4 @@ public class GameView extends GLSurfaceView
         Engine.drawFrame();
     }
 
-    @Override
-    public boolean onTouch(View v, MotionEvent event) {
-        if (event.getActionIndex() == 0) {
-            Engine.onTouch(event.getActionMasked(), event.getX(), event.getY());
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    public boolean onLongClick(View v) {
-        Engine.keyEvent(Engine.ButtonSelect, 1, 0);
-        Engine.keyEvent(Engine.ButtonSelect, 0, 0);
-        return true;
-    }
 }
