@@ -20,17 +20,8 @@ public class MainActivity extends Activity implements View.OnTouchListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
 
-        findViewById(R.id.buttonA).setOnTouchListener(this);
-        findViewById(R.id.buttonB).setOnTouchListener(this);
-        findViewById(R.id.buttonUp).setOnTouchListener(this);
-        findViewById(R.id.buttonDown).setOnTouchListener(this);
-        findViewById(R.id.buttonLeft).setOnTouchListener(this);
-        findViewById(R.id.buttonRight).setOnTouchListener(this);
-
-        findViewById(R.id.buttonAxisBkg).setOnTouchListener(this);
-        findViewById(R.id.buttonCtrlBkg).setOnTouchListener(this);
-
         gameView = (GameView) findViewById(R.id.gameView);
+        gameView.setOnTouchListener(this);
 
         if (!App.running) {
             try {
@@ -71,27 +62,13 @@ public class MainActivity extends Activity implements View.OnTouchListener {
         gameView.onPause();
     }
 
-
     @Override
     public boolean onTouch(View v, MotionEvent event) {
-        if (v.getTag() != null) {
-            try {
-                int key = Integer.parseInt(v.getTag().toString());
-                if (key >= 0 && key < 8) {
-                    switch (event.getAction()) {
-                        case MotionEvent.ACTION_DOWN:
-                            Engine.keyEvent(key, 1, 0);
-                            break;
+        return toggleActionBar();
+    }
 
-                        case MotionEvent.ACTION_UP:
-                            Engine.keyEvent(key, 0, 0);
-                            break;
-                    }
-                }
-            } catch (NumberFormatException e) {
-                e.printStackTrace();
-            }
-        }
-        return true;
+    private boolean toggleActionBar() {
+        // TODO
+        return false;
     }
 }
