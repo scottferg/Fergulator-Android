@@ -72,20 +72,6 @@ public class MainActivity extends Activity implements View.OnTouchListener {
     }
 
     @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
-        MenuItem start = menu.findItem(R.id.menu_nes_start);
-        if (App.playing) {
-            start.setIcon(android.R.drawable.ic_media_pause);
-            start.setTitle("PAUSE");
-        } else {
-            start.setIcon(android.R.drawable.ic_media_play);
-            start.setTitle("START");
-        }
-        return true;
-//        return super.onPrepareOptionsMenu(menu);
-    }
-
-    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_nes_select:
