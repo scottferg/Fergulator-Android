@@ -19,7 +19,7 @@ public class ButtonNES extends Button {
         A, B, SELECT, START, UP, DOWN, LEFT, RIGHT
     }
 
-    private Button mButton;
+    private       Button  mButton;
 
     public ButtonNES(Context context, Button button) {
         super(context);
@@ -69,4 +69,22 @@ public class ButtonNES extends Button {
             return true;
         }
     };
+
+    public static void pressStart() {
+        pressButton(Button.START);
+    }
+
+    public static void pressSelect() {
+        pressButton(Button.SELECT);
+    }
+
+    public static void pressButton(Button button) {
+        Engine.keyEvent(button.ordinal(), 1, 0);
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        Engine.keyEvent(button.ordinal(), 0, 0);
+    }
 }
