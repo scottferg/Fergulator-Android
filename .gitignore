@@ -8,5 +8,6 @@ out/
 local.properties
 .build_log
 .idea/
+.DS_Store
 
 
