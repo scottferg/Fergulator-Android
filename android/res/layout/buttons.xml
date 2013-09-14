@@ -5,16 +5,23 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
-    <com.vokal.afergulator.widget.DPadNES
+    <FrameLayout
             android:id="@+id/buttonAxisBkg"
-            android:layout_width="160dp"
-            android:layout_height="160dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
             android:layout_alignParentLeft="true"
-            android:gravity="center_horizontal|bottom"
-            android:orientation="vertical"
-            android:background="@drawable/dpad_bg"
-            />
+            android:paddingRight="64dp"
+            android:paddingTop="64dp"
+            android:background="@android:color/transparent"
+            android:clickable="true"
+            >
+        <com.vokal.afergulator.widget.DPadNES
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:background="@drawable/dpad_bg"
+                />
+    </FrameLayout>
 
     <LinearLayout
             android:id="@+id/buttonCtrlBkg"
@@ -22,55 +29,31 @@
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
             android:layout_alignParentBottom="true"
+            android:paddingLeft="32dp"
+            android:paddingTop="32dp"
             android:orientation="horizontal"
             android:background="@android:color/transparent"
+            android:clickable="true"
             >
 
         <com.vokal.afergulator.widget.ButtonNES
                 android:id="@+id/buttonB"
-                android:layout_width="80dp"
-                android:layout_height="80dp"
-                android:layout_marginRight="20dp"
-                style="@android:style/Widget.Holo.Button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"
                 android:background="@drawable/nes_button"
                 custom:button="B"
                 />
 
         <com.vokal.afergulator.widget.ButtonNES
                 android:id="@+id/buttonA"
-                android:layout_width="80dp"
-                android:layout_height="80dp"
-                style="@android:style/Widget.Holo.Button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"
                 android:background="@drawable/nes_button"
                 custom:button="A"
                 />
 
     </LinearLayout>
 
-    <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-
-            android:padding="16dp"
-            android:layout_centerHorizontal="true">
-
-        <com.vokal.afergulator.widget.ButtonNES
-                style="@android:style/Widget.Holo.Button"
-                android:id="@+id/button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@android:drawable/ic_media_pause"
-                custom:button="SELECT"
-                />
-
-        <com.vokal.afergulator.widget.ButtonNES
-                style="@android:style/Widget.Holo.Button"
-                android:id="@+id/button2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@android:drawable/ic_media_play"
-                custom:button="START"
-                />
-    </LinearLayout>
 </RelativeLayout>
