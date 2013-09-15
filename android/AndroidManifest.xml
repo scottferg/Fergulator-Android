@@ -10,7 +10,7 @@
 		<uses-feature android:glEsVersion="0x00020000" android:required="true"/>
 
         <activity android:name="com.vokal.afergulator.MainActivity"
-				  android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+				  android:theme="@android:style/Theme.Holo.Light.DarkActionBar"
                   android:screenOrientation="sensorLandscape"
                   android:configChanges="orientation"
                   android:icon="@drawable/ic_launcher"
