@@ -16,10 +16,12 @@ import com.vokal.afergulator.R;
 public class ButtonNES extends Button {
 
     public static enum Button {
-        A, B, SELECT, START, UP, DOWN, LEFT, RIGHT
+        A, B, SELECT, START, UP, DOWN, LEFT, RIGHT, RESET
     }
 
-    private       Button  mButton;
+    private       ButtonGroup mGroup;
+    private       Button      mButton;
+
 
     public ButtonNES(Context context, Button button) {
         super(context);
@@ -56,35 +58,70 @@ public class ButtonNES extends Button {
         }
     }
 
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+
+        if (getParent() instanceof ButtonGroup) {
+            mGroup = (ButtonGroup) getParent();
+        }
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        mGroup = null;
+    }
+
     private OnTouchListener touchListener = new OnTouchListener() {
         @Override
         public boolean onTouch(View v, MotionEvent event) {
             if (event.getAction() == MotionEvent.ACTION_UP) {
-                Engine.keyEvent(mButton.ordinal(), 0, 0);
-                setAlpha(0.5f);
+                setUp();
             } else if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                Engine.keyEvent(mButton.ordinal(), 1, 0);
-                setAlpha(1.0f);
+                setDown();
+            }
+            if (mGroup != null) {
+                mGroup.onTouch(v, event);
             }
             return true;
         }
     };
+
+    private void setUp() {
+        Engine.keyEvent(mButton.ordinal(), 0, 0);
+        setAlpha(0.5f);
+        invalidate();
+    }
+
+    private void setDown() {
+        Engine.keyEvent(mButton.ordinal(), 1, 0);
+        setAlpha(1.0f);
+        invalidate();
+        getParent().requestDisallowInterceptTouchEvent(false);
+    }
+
+    public static void pressButton(Button button) {
+        Engine.keyEvent(button.ordinal(), 1, 0);
+        try {
+            Thread.sleep(50);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        Engine.keyEvent(button.ordinal(), 0, 0);
+    }
+
+    public static void pressReset() {
+        pressButton(Button.RESET);
+    }
 
     public static void pressStart() {
         pressButton(Button.START);
     }
 
     public static void pressSelect() {
-        pressButton(Button.SELECT);
+//        pressButton(Button.SELECT);
     }
 
-    public static void pressButton(Button button) {
-        Engine.keyEvent(button.ordinal(), 1, 0);
-        try {
-            Thread.sleep(500);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        Engine.keyEvent(button.ordinal(), 0, 0);
-    }
+
 }
