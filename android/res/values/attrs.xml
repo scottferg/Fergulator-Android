@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="ButtonNES">
+        <attr name="button" format="enum">
+            <enum name="A"      value="0" />
+            <enum name="B"      value="1" />
+            <enum name="SELECT" value="2" />
+            <enum name="START"  value="3" />
+            <enum name="UP"     value="4" />
+            <enum name="DOWN"   value="5" />
+            <enum name="LEFT"   value="6" />
+            <enum name="RIGHT"  value="7" />
+        </attr>
+    </declare-styleable>
+</resources>

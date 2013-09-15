@@ -1,9 +1,13 @@
 #include "go_jni.h"
 
-jbyte* gimmeMahBytes(JNIEnv* env, jbyteArray array) {
+jbyte* getByteArrayPtr(JNIEnv* env, jbyteArray array) {
     return (*env)->GetByteArrayElements(env, array, JNI_FALSE);
 }
 
-jsize howLongIsIt(JNIEnv* env, jbyteArray array) {
+jsize getByteArrayLen(JNIEnv* env, jbyteArray array) {
     return (*env)->GetArrayLength(env, array);
+}
+
+char* getCharPtr(JNIEnv* env, jstring string) {
+    return (char*) (*env)->GetStringUTFChars(env, string, 0);
 }
