@@ -6,9 +6,9 @@ public class Engine {
     public static native void resize(int w, int h);
     public static native void drawFrame();
 
-    public static native void loadRom(byte[] bytes, String name);
+    public static native boolean loadRom(byte[] bytes, String name);
     public static native void setFilePath(String path);
-    public static native void setRunning(boolean running);
+    public static native void pauseEmulator(boolean running);
     public static native void keyEvent(int key, int down, int player);
 
 	static {
@@ -16,10 +16,10 @@ public class Engine {
 	}
 
     public static void resume() {
-        setRunning(true);
+        pauseEmulator(false);
     }
 
     public static void pause() {
-        setRunning(false);
+        pauseEmulator(true);
     }
 }

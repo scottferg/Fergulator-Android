@@ -80,13 +80,13 @@ public class ButtonGroup extends RelativeLayout implements View.OnTouchListener 
             if (e2.getSize() > .9f && e2.getPressure() > 1f) {
                 if (!multiMode) {
                     Log.i(TAG, "MULTI START");
-                    Engine.keyEvent(ButtonNES.Button.A.ordinal(), 1, 0);
+                    Engine.keyEvent(ButtonNES.Key.A.ordinal(), 1, 0);
                     multiMode = true;
                 }
             } else {
                 if (multiMode) {
                     Log.v(TAG, "multi stop");
-                    Engine.keyEvent(ButtonNES.Button.A.ordinal(), 0, 0);
+                    Engine.keyEvent(ButtonNES.Key.A.ordinal(), 0, 0);
                     multiMode = false;
                 }
             }
