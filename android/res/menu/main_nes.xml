@@ -2,6 +2,8 @@
 
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!--<item android:id="@+id/menu_nes_restart" android:icon="@android:drawable/ic_menu_revert"
+          android:title="RESET" android:showAsAction="always|withText" />-->
     <item android:id="@+id/menu_nes_select" android:icon="@android:drawable/ic_menu_upload"
           android:title="SELECT" android:showAsAction="always|withText" />
     <item android:id="@+id/menu_nes_start" android:icon="@android:drawable/ic_media_play"
