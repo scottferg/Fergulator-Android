@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.view.*;
 import android.widget.ArrayAdapter;
+import android.widget.TextView;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,7 +18,11 @@ public class MainActivity extends Activity
     private static final String TAG = MainActivity.class.getSimpleName();
 
     private RomAdapter romAdapter;
-    private GameView gameView;
+    private GameView   gameView;
+
+    private ButtonNES mBtnSelect;
+    private ButtonNES mBtnStart;
+    private ButtonNES mBtnReset;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -32,6 +37,10 @@ public class MainActivity extends Activity
 
         gameView = (GameView) findViewById(R.id.gameView);
         gameView.setOnTouchListener(this);
+
+        mBtnSelect = new ButtonNES(this, ButtonNES.Key.SELECT);
+        mBtnStart  = new ButtonNES(this, ButtonNES.Key.START);
+        mBtnReset  = new ButtonNES(this, ButtonNES.Key.RESET);
     }
 
     @Override
@@ -57,18 +66,15 @@ public class MainActivity extends Activity
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.menu_nes_restart:
-                ButtonNES.pressReset();
-                return true;
-
             case R.id.menu_nes_select:
-                ButtonNES.pressSelect();
+                mBtnSelect.press();
                 return true;
-
             case R.id.menu_nes_start:
-                ButtonNES.pressStart();
+                mBtnStart.press();
                 return true;
-
+//            case R.id.menu_nes_restart:
+//                mBtnReset.press();
+//                return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -102,7 +108,7 @@ public class MainActivity extends Activity
         public static final String SELECT_ROM = "Select ROM...";
 
         public RomAdapter() {
-            super(MainActivity.this, android.R.layout.simple_list_item_1);
+            super(MainActivity.this, R.layout.rom_spinner_item);
             try {
                 String[] roms = getRoms();
                 add(SELECT_ROM);
@@ -113,6 +119,19 @@ public class MainActivity extends Activity
             }
         }
 
+        @Override
+        public View getDropDownView(int position, View convertView, ViewGroup parent) {
+            TextView v = (TextView) super.getDropDownView(position, convertView, parent);
+
+            if (position == getActionBar().getSelectedNavigationIndex()) {
+                v.setTextColor(Integer.MAX_VALUE);
+            } else {
+                v.setTextColor(getResources().getColor(android.R.color.holo_blue_light));
+            }
+
+            return v;
+        }
+
         private String[] getRoms() throws IOException {
             return getAssets().list("roms");
         }
@@ -120,21 +139,20 @@ public class MainActivity extends Activity
 
     @Override
     public boolean onNavigationItemSelected(int itemPosition, long itemId) {
+        String top = romAdapter.getItem(0);
+
+        if (itemPosition == 0) return false;
+
         String rom = romAdapter.getItem(itemPosition);
-        if (RomAdapter.SELECT_ROM.equals(rom) && itemPosition == 0) {
-            return false;
-        } else {
-            String zero = romAdapter.getItem(0);
-            if (RomAdapter.SELECT_ROM.equals(zero)) {
-                romAdapter.remove(zero);
-            }
-        }
 
         InputStream is = null;
         try {
             is = getAssets().open("roms/" + rom);
-            gameView.loadGame(is, rom);
-            return true;
+            if (gameView.loadGame(is, rom)) {
+                getActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
+                getActionBar().setTitle(rom);
+                return true;
+            }
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
