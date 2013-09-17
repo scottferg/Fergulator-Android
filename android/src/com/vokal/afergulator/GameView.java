@@ -20,6 +20,8 @@ import org.apache.commons.io.IOUtils;
 public class GameView extends GLSurfaceView
         implements GLSurfaceView.Renderer {
 
+    private static final String TAG = GameView.class.getSimpleName();
+
     public GameView(Context context) {
         super(context);
         init();
@@ -37,11 +39,13 @@ public class GameView extends GLSurfaceView
         Engine.setFilePath(getContext().getExternalCacheDir().getAbsolutePath());
     }
 
-    public void loadGame(InputStream is, String name) throws IOException {
+    public boolean loadGame(InputStream is, String name) throws IOException {
         byte[] rom = IOUtils.toByteArray(is);
         byte[] start = Arrays.copyOfRange(rom, 0, 3);
         Log.d("GameView", String.format("%s ROM: %s (%dk)", new String(start), name, rom.length / 1024));
-        Engine.loadRom(rom, name);
+        boolean result = Engine.loadRom(rom, name);
+        Log.d(TAG, String.format("%s, loaded = %B", name, result));
+        return result;
     }
 
     private void setupContextPreserve() {
