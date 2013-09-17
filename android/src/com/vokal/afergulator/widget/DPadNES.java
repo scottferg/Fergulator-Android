@@ -17,17 +17,10 @@ import static com.vokal.afergulator.widget.ButtonNES.Key.LEFT;
 import static com.vokal.afergulator.widget.ButtonNES.Key.RIGHT;
 import static com.vokal.afergulator.widget.ButtonNES.Key.UP;
 
-/**
- * Created by Nick on 9/13/13.
- */
+
 public class DPadNES extends Button {
 
-    public static final String TAG = "DPadNES";
-
     private static final Map<ButtonNES.Key, Boolean> states = new HashMap<ButtonNES.Key, Boolean>(4);
-
-    private float mMaxPressure;
-    private float mMinPressure;
 
     private PointF mCenter;
 
@@ -47,7 +40,7 @@ public class DPadNES extends Button {
 
     private void init() {
         setOnTouchListener(touchListener);
-        resetStates();
+        if (!isInEditMode()) resetStates();
     }
 
     private OnTouchListener touchListener = new OnTouchListener() {
@@ -116,24 +109,15 @@ public class DPadNES extends Button {
                 setPressed(false, UP, LEFT, RIGHT);
             }
         }
-
-//        StringBuilder bldr = new StringBuilder();
-//        if (states[0]) bldr.append("UP ");
-//        if (states[1]) bldr.append("DOWN ");
-//        if (states[2]) bldr.append("LEFT");
-//        if (states[3]) bldr.append("RIGHT");
-//        Log.v(TAG, bldr.toString());
-
-//        checkPressure(ev.getPressure());
     }
 
     private void setPressed(boolean state, ButtonNES.Key... buttons) {
         for (ButtonNES.Key b : buttons) {
             if (state != states.get(b)) {
                 if (state) {
-                    Engine.keyEvent(b.ordinal(), 1, 0);
+                    Engine.buttonDown(b);
                 } else {
-                    Engine.keyEvent(b.ordinal(), 0, 0);
+                    Engine.buttonUp(b);
                 }
                 states.put(b, state);
             }
@@ -152,9 +136,9 @@ public class DPadNES extends Button {
     private void applyStates() {
         for (Map.Entry<ButtonNES.Key, Boolean> s : states.entrySet()) {
             if (s.getValue()) {
-                Engine.keyEvent(s.getKey().ordinal(), 1, 0);
+                Engine.buttonDown(s.getKey());
             } else {
-                Engine.keyEvent(s.getKey().ordinal(), 0, 0);
+                Engine.buttonUp(s.getKey());
             }
         }
     }
@@ -162,24 +146,5 @@ public class DPadNES extends Button {
     private double lineLen(PointF aP1, PointF aP2) {
         return Math.sqrt(Math.pow((aP1.x - aP2.x), 2) + Math.pow(aP1.y - aP2.y, 2));
     }
-
-    void checkPressure(float pressure) {
-        mMaxPressure = Math.max(mMaxPressure, pressure);
-        mMinPressure = Math.min(mMinPressure, pressure);
-        float pct = pressure / (mMaxPressure - mMinPressure) * 100;
-//        Log.v(TAG, String.format("pressure %% %.2f", pct));
-    }
-
-    // TODO: has physical keyboard
-    private OnTouchListener dPadListener = new OnTouchListener() {
-        @Override
-        public boolean onTouch(View v, MotionEvent event) {
-            switch (event.getAction()) {
-//                case MotionEvent.ACTION:  // ???
-            }
-
-            return false;
-        }
-    };
 
 }

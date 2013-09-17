@@ -78,39 +78,34 @@ public class ButtonNES extends Button {
     private OnTouchListener touchListener = new OnTouchListener() {
         @Override
         public boolean onTouch(View v, MotionEvent event) {
-            if (event.getAction() == MotionEvent.ACTION_UP) {
-                setUp();
-            } else if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                setDown();
+
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    setDown();
+                    break;
+                case MotionEvent.ACTION_UP:
+                    setUp();
+                    break;
             }
+
             if (mGroup != null) {
                 mGroup.onTouch(v, event);
             }
+
             return true;
         }
     };
 
     private void setUp() {
-        Engine.keyEvent(mButton.ordinal(), 0, 0);
+        Engine.buttonUp(mButton);
         setAlpha(0.5f);
         invalidate();
     }
 
     private void setDown() {
-        Engine.keyEvent(mButton.ordinal(), 1, 0);
+        Engine.buttonDown(mButton);
         setAlpha(1.0f);
         invalidate();
-        getParent().requestDisallowInterceptTouchEvent(false);
-    }
-
-    public void press() {
-        Engine.keyEvent(mButton.ordinal(), 1, 0);
-        try {
-            Thread.sleep(50);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        Engine.keyEvent(mButton.ordinal(), 0, 0);
     }
 
 }

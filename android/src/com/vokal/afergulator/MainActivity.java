@@ -20,10 +20,6 @@ public class MainActivity extends Activity
     private RomAdapter romAdapter;
     private GameView   gameView;
 
-    private ButtonNES mBtnSelect;
-    private ButtonNES mBtnStart;
-    private ButtonNES mBtnReset;
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,9 +34,6 @@ public class MainActivity extends Activity
         gameView = (GameView) findViewById(R.id.gameView);
         gameView.setOnTouchListener(this);
 
-        mBtnSelect = new ButtonNES(this, ButtonNES.Key.SELECT);
-        mBtnStart  = new ButtonNES(this, ButtonNES.Key.START);
-        mBtnReset  = new ButtonNES(this, ButtonNES.Key.RESET);
     }
 
     @Override
@@ -67,10 +60,10 @@ public class MainActivity extends Activity
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_nes_select:
-                mBtnSelect.press();
+                Engine.simulatePress(ButtonNES.Key.SELECT, 0);
                 return true;
             case R.id.menu_nes_start:
-                mBtnStart.press();
+                Engine.simulatePress(ButtonNES.Key.START, 0);
                 return true;
 //            case R.id.menu_nes_restart:
 //                mBtnReset.press();
