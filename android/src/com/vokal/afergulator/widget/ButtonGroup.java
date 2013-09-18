@@ -79,6 +79,7 @@ public class ButtonGroup extends LinearLayout implements View.OnTouchListener {
 
     @Override
     public boolean onTouch(View view, MotionEvent event) {
+        if (event.getAction() == MotionEvent.ACTION_UP) allUp();
         if (event.getAction() != MotionEvent.ACTION_MOVE) return true;
         if (!(view instanceof ButtonNES)) return true;
 
@@ -103,6 +104,14 @@ public class ButtonGroup extends LinearLayout implements View.OnTouchListener {
         }
 
         return true;
+    }
+
+    private void allUp() {
+        for (Map.Entry<ButtonNES, Boolean> btn : states.entrySet()) {
+            if (btn.getValue()) {
+                btn.getKey().setUp();
+            }
+        }
     }
 
 }
