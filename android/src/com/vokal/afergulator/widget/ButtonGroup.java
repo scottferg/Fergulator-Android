@@ -1,12 +1,13 @@
 package com.vokal.afergulator.widget;
 
 import android.content.Context;
+import android.graphics.Rect;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.*;
 import android.widget.RelativeLayout;
 
-import com.vokal.afergulator.Engine;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by Nick on 9/14/13.
@@ -15,7 +16,10 @@ public class ButtonGroup extends RelativeLayout implements View.OnTouchListener 
 
     private static final String TAG = ButtonGroup.class.getSimpleName();
 
-    private GestureDetector detector;
+    HashMap<ButtonNES, Rect>  bounds;
+    HashMap<ButtonNES, Boolean> states;
+
+    private int slop;
 
     public ButtonGroup(Context context) {
         super(context);
@@ -34,65 +38,70 @@ public class ButtonGroup extends RelativeLayout implements View.OnTouchListener 
         super.onFinishInflate();
 
         setBackgroundColor(0);
-        setOnTouchListener(this);
 
-        detector = new GestureDetector(getContext(), gestureListener);
-
-//        GestureOverlayView gov = new GestureOverlayView(getContext());
-//        addView(gov);
+        slop = ViewConfiguration.get(getContext()).getScaledTouchSlop();
     }
 
     @Override
-    public boolean onTouch(View v, MotionEvent event) {
-//        dump(event);
-        detector.onTouchEvent(event);
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+
+        bounds = new HashMap<ButtonNES, Rect>(2);
+        states = new HashMap<ButtonNES, Boolean>(2);
+
+        postDelayed(updateBounds, 50);
+    }
+
+    private Runnable updateBounds = new Runnable() {
+        @Override
+        public void run() {
+            int numChildren = getChildCount();
+            for (int i = 0; i < numChildren; i++) {
+                if (getChildAt(i) instanceof ButtonNES) {
+                    ButtonNES btn = (ButtonNES) getChildAt(i);
+                    Rect b = new Rect(btn.getLeft(), btn.getTop(), btn.getRight(), btn.getBottom());
+                    b.inset(slop, slop);
+                    bounds.put(btn, b);
+                    states.put(btn, false);
+                }
+            }
+        }
+    };
+
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+
+        setOnTouchListener(null);
+        bounds = null;
+    }
+
+    @Override
+    public boolean onTouch(View view, MotionEvent event) {
+        if (event.getAction() != MotionEvent.ACTION_MOVE) return true;
+        if (!(view instanceof ButtonNES)) return true;
+
+        ButtonNES button = (ButtonNES) view;
+        Rect b = bounds.get(button);
+
+        int x = (int) event.getX() + b.left;
+        int y = (int) event.getY() + b.top;
+
+        for (Map.Entry<ButtonNES, Rect> btn : bounds.entrySet()) {
+            if (view != btn.getKey()) {
+                if (btn.getValue().contains(x, y)) {
+                    if (!states.get(btn.getKey())) {
+                        btn.getKey().setDown();
+                        states.put(btn.getKey(), true);
+                    }
+                } else if (states.get(btn.getKey())) {
+                    btn.getKey().setUp();
+                    states.put(btn.getKey(), false);
+                }
+            }
+        }
+
         return true;
     }
 
-    private void dump(MotionEvent ev) {
-        Log.v("BTN_GRP", String.format("(%.0f, %.0f) sz=%.3f, ps=%.3f, tch=%.3f, tool%.3f",
-                                       ev.getX(), ev.getY(),
-                                       ev.getSize(), ev.getPressure(),
-                                       ev.getTouchMajor(),
-                                       ev.getToolMajor()));
-    }
-
-    @Override
-    public void requestDisallowInterceptTouchEvent(boolean disallowIntercept) {
-        super.requestDisallowInterceptTouchEvent(disallowIntercept);
-//        Log.v(TAG, "requestDisallowIntercept");
-    }
-
-    @Override
-    public boolean onInterceptTouchEvent(MotionEvent ev) {
-//        Log.v("BTN_GRP", "onIntercept");
-        return super.onInterceptTouchEvent(ev);
-
-    }
-
-    private GestureDetector.OnGestureListener gestureListener = new GestureDetector.SimpleOnGestureListener() {
-        private static final String TAG = "GESTURE";
-
-        private boolean multiMode;
-
-        @Override
-        public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-            if (e2.getSize() > .9f && e2.getPressure() > 1f) {
-                if (!multiMode) {
-                    Log.i(TAG, "MULTI START");
-                    Engine.buttonDown(ButtonNES.Key.A);
-                    multiMode = true;
-                }
-            } else {
-                if (multiMode) {
-                    Log.v(TAG, "multi stop");
-                    Engine.buttonUp(ButtonNES.Key.A);
-                    multiMode = false;
-                }
-            }
-
-            return false;
-        }
-
-    };
 }
