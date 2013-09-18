@@ -1,7 +1,6 @@
 package com.vokal.afergulator.widget;
 
 import android.content.Context;
-import android.content.Intent;
 import android.content.res.TypedArray;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
@@ -14,7 +13,7 @@ import com.vokal.afergulator.R;
 /**
  * Created by Nick on 9/13/13.
  */
-public class ButtonNES extends Button {
+public class ButtonNES extends Button implements View.OnTouchListener {
 
     private static final String TAG = ButtonNES.class.getSimpleName();
 
@@ -54,7 +53,7 @@ public class ButtonNES extends Button {
         if (mButton != null) {
             int o = mButton.ordinal();
             if (o >= 0 && o < Key.values().length) {
-                setOnTouchListener(touchListener);
+                setOnTouchListener(this);
                 setAlpha(0.5f);
             }
         }
@@ -75,37 +74,38 @@ public class ButtonNES extends Button {
         mGroup = null;
     }
 
-    private OnTouchListener touchListener = new OnTouchListener() {
-        @Override
-        public boolean onTouch(View v, MotionEvent event) {
-
-            switch (event.getAction()) {
-                case MotionEvent.ACTION_DOWN:
-                    setDown();
-                    break;
-                case MotionEvent.ACTION_UP:
-                    setUp();
-                    break;
-            }
-
-            if (mGroup != null) {
-                mGroup.onTouch(v, event);
-            }
-
-            return true;
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                setDown();
+                break;
+            case MotionEvent.ACTION_UP:
+                setUp();
+                break;
         }
-    };
 
-    private void setUp() {
+        if (mGroup != null && v != mGroup) {
+            mGroup.onTouch(v, event);
+        }
+
+        return true;
+    }
+
+    public void setUp() {
         Engine.buttonUp(mButton);
         setAlpha(0.5f);
         invalidate();
     }
 
-    private void setDown() {
+    public void setDown() {
         Engine.buttonDown(mButton);
         setAlpha(1.0f);
         invalidate();
     }
 
+    @Override
+    public String toString() {
+        return mButton.name();
+    }
 }
