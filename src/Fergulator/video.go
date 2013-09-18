@@ -12,7 +12,6 @@ import "C"
 import (
 	"fmt"
 	"log"
-	"math"
 	"unsafe"
 )
 
@@ -91,25 +90,10 @@ func (game *Video) initGL() {
 }
 
 func (game *Video) resize(width, height int) {
-	x_offset := 0
-	y_offset := 0
-
-	r := ((float64)(height)) / ((float64)(width))
-
-	if r > 0.9375 { // Height taller than ratio
-		h := (int)(math.Floor((float64)(0.9375 * (float64)(width))))
-		y_offset = (height - h) / 2
-		height = h
-	} else if r < 0.9375 { // Width wider
-		w := (int)(math.Floor((float64)((256.0 / 240.0) * (float64)(height))))
-		x_offset = (width - w) / 2
-		width = w
-	}
-
 	game.width = width
 	game.height = height
 
-	C.glViewport(C.GLint(x_offset), C.GLint(y_offset), C.GLsizei(width), C.GLsizei(height))
+	C.glViewport(0, 0, C.GLsizei(width), C.GLsizei(height))
 }
 
 func (game *Video) drawFrame() {
@@ -126,7 +110,11 @@ func (game *Video) drawFrame() {
 		}
 	}
 
+	checkGLError()
+
 	C.glDrawArrays(C.GL_TRIANGLES, 0, 6)
+
+	checkGLError()
 }
 
 func createProgram(vertShaderSrc string, fragShaderSrc string) C.GLuint {
