@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.view.*;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
 import java.util.HashMap;
@@ -12,7 +13,7 @@ import java.util.Map;
 /**
  * Created by Nick on 9/14/13.
  */
-public class ButtonGroup extends RelativeLayout implements View.OnTouchListener {
+public class ButtonGroup extends LinearLayout implements View.OnTouchListener {
 
     private static final String TAG = ButtonGroup.class.getSimpleName();
 

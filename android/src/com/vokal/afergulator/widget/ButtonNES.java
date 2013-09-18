@@ -75,6 +75,14 @@ public class ButtonNES extends Button implements View.OnTouchListener {
     }
 
     @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        int w = getDefaultSize(0, widthMeasureSpec);
+        int h = resolveSize(0, heightMeasureSpec);
+        if (h == 0) h = w;
+        setMeasuredDimension(w, h);
+    }
+
+    @Override
     public boolean onTouch(View v, MotionEvent event) {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:

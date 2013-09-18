@@ -1,6 +1,7 @@
 package com.vokal.afergulator;
 
 import android.content.Context;
+import android.graphics.Point;
 import android.opengl.GLSurfaceView;
 import android.os.Build;
 import android.util.AttributeSet;
@@ -22,21 +23,25 @@ public class GameView extends GLSurfaceView
 
     private static final String TAG = GameView.class.getSimpleName();
 
+    private Point mSize;
+
     public GameView(Context context) {
         super(context);
-        init();
+        init(context);
     }
 
     public GameView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        init();
+        init(context);
     }
 
-    private void init() {
+    private void init(Context ctx) {
         setupContextPreserve();
         setEGLContextClientVersion(2);
         setRenderer(this);
-        Engine.setFilePath(getContext().getExternalCacheDir().getAbsolutePath());
+        setDebugFlags(DEBUG_CHECK_GL_ERROR | DEBUG_CHECK_GL_ERROR);
+        if (!isInEditMode())
+            Engine.setFilePath(ctx.getExternalCacheDir().getAbsolutePath());
     }
 
     public boolean loadGame(InputStream is, String name) throws IOException {
@@ -52,6 +57,14 @@ public class GameView extends GLSurfaceView
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
             setPreserveEGLContextOnPause(true);
         }
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        int w = resolveSize(0, widthMeasureSpec);
+        int h = getDefaultSize(0, heightMeasureSpec);
+        if (w == 0) w = Math.round(h * 240f / 224f);
+        setMeasuredDimension(w, h);
     }
 
     @Override

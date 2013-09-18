@@ -12,13 +12,12 @@ import java.io.InputStream;
 
 import com.vokal.afergulator.widget.ButtonNES;
 
-public class MainActivity extends Activity
-        implements View.OnTouchListener, ActionBar.OnNavigationListener {
+public class MainActivity extends Activity implements ActionBar.OnNavigationListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
     private RomAdapter romAdapter;
-    private GameView   gameView;
+    private GameView gameView;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -26,14 +25,13 @@ public class MainActivity extends Activity
         requestWindowFeature(Window.FEATURE_ACTION_BAR_OVERLAY);
         setContentView(R.layout.main);
 
-        getActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
+        findViewById(R.id.frameLayout).setOnClickListener(toggleActionBar);
 
         romAdapter = new RomAdapter();
+        getActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
         getActionBar().setListNavigationCallbacks(romAdapter, this);
 
         gameView = (GameView) findViewById(R.id.gameView);
-        gameView.setOnTouchListener(this);
-
     }
 
     @Override
@@ -72,29 +70,18 @@ public class MainActivity extends Activity
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    public boolean onTouch(View v, MotionEvent event) {
-        switch (v.getId()) {
-            case R.id.buttonAxisBkg:
-                return true;
-
-            default:
-                if (MotionEvent.ACTION_DOWN == event.getAction())
-                    toggleActionBar();
+    private View.OnClickListener toggleActionBar = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            if (getActionBar().isShowing()) {
+                getActionBar().hide();
+                gameView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE);
+            } else {
+                gameView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
+                getActionBar().show();
+            }
         }
-
-        return true;
-    }
-
-    private void toggleActionBar() {
-        if (getActionBar().isShowing()) {
-            getActionBar().hide();
-            gameView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE);
-        } else {
-            gameView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
-            getActionBar().show();
-        }
-    }
+    };
 
     private class RomAdapter extends ArrayAdapter<String> {
 
@@ -132,8 +119,6 @@ public class MainActivity extends Activity
 
     @Override
     public boolean onNavigationItemSelected(int itemPosition, long itemId) {
-        String top = romAdapter.getItem(0);
-
         if (itemPosition == 0) return false;
 
         String rom = romAdapter.getItem(itemPosition);
@@ -159,4 +144,5 @@ public class MainActivity extends Activity
         }
         return false;
     }
+
 }

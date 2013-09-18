@@ -1,15 +1,62 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-             android:layout_width="match_parent"
-             android:layout_height="match_parent">
+<RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:custom="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/frameLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/black"
+        >
 
     <com.vokal.afergulator.GameView
             android:id="@+id/gameView"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="match_parent"
+            android:layout_centerHorizontal="true"
             />
 
-    <include layout="@layout/buttons" />
+    <com.vokal.afergulator.widget.DPadNES
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentLeft="true"
+            android:layout_toLeftOf="@id/gameView"
+            android:background="@drawable/dpad_bg"
+            />
 
-</FrameLayout>
+
+    <com.vokal.afergulator.widget.ButtonGroup
+            android:id="@+id/button_grp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true"
+            android:layout_toRightOf="@id/gameView"
+            android:clickable="true"
+            >
+
+        <com.vokal.afergulator.widget.ButtonNES
+                android:id="@+id/buttonB"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_margin="4dp"
+                android:background="@drawable/nes_button"
+                custom:button="B"
+                />
+
+        <com.vokal.afergulator.widget.ButtonNES
+                android:id="@+id/buttonA"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_margin="4dp"
+                android:background="@drawable/nes_button"
+                custom:button="A"
+                />
+
+    </com.vokal.afergulator.widget.ButtonGroup>
+
+
+</RelativeLayout>

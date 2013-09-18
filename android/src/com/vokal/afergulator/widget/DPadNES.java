@@ -147,4 +147,13 @@ public class DPadNES extends Button {
         return Math.sqrt(Math.pow((aP1.x - aP2.x), 2) + Math.pow(aP1.y - aP2.y, 2));
     }
 
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        int w = getDefaultSize(0, widthMeasureSpec);
+        int h = resolveSize(0, heightMeasureSpec);
+        if (h == 0) h = w;
+        setMeasuredDimension(w, h);
+    }
+
 }
