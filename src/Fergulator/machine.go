@@ -8,7 +8,7 @@ import "C"
 import (
 	"log"
 	"runtime"
-	"github.com/nick-fedesna/Fergulator/nes"
+	"github.com/scottferg/Fergulator/nes"
 )
 
 var (
