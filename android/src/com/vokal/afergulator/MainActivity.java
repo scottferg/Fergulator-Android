@@ -109,12 +109,21 @@ public class MainActivity extends Activity implements ActionBar.OnNavigationList
                 v.setTextColor(getResources().getColor(android.R.color.holo_blue_light));
             }
 
+            v.setText(displayRomName(v.getText().toString()));
+
             return v;
         }
 
         private String[] getRoms() throws IOException {
             return getAssets().list("roms");
         }
+    }
+
+    private String displayRomName(String rom) {
+        if (rom.endsWith(".nes")) {
+            return rom.substring(0, rom.length() - 4);
+        }
+        return rom;
     }
 
     @Override
@@ -128,7 +137,7 @@ public class MainActivity extends Activity implements ActionBar.OnNavigationList
             is = getAssets().open("roms/" + rom);
             if (gameView.loadGame(is, rom)) {
                 getActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
-                getActionBar().setTitle(rom);
+                getActionBar().setTitle(displayRomName(rom));
                 return true;
             }
         } catch (IOException e) {
