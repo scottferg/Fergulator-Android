@@ -17,11 +17,13 @@
             />
 
     <com.vokal.afergulator.widget.DPadNES
+            android:id="@+id/buttonDPad"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
             android:layout_alignParentLeft="true"
             android:layout_toLeftOf="@id/gameView"
+            android:layout_marginTop="48dp"
             android:background="@drawable/dpad_bg"
             />
 
@@ -33,6 +35,7 @@
             android:layout_alignParentRight="true"
             android:layout_alignParentBottom="true"
             android:layout_toRightOf="@id/gameView"
+            android:paddingTop="48dp"
             android:clickable="true"
             >
 
@@ -57,6 +60,31 @@
                 />
 
     </com.vokal.afergulator.widget.ButtonGroup>
+
+    <com.vokal.afergulator.widget.ButtonNES
+            android:id="@+id/buttonSelect"
+            android:layout_width="wrap_content"
+            android:layout_height="96dp"
+            android:layout_toLeftOf="@id/gameView"
+            android:layout_above="@id/buttonDPad"
+            style="@android:style/Widget.Holo.Light.Button"
+            android:text="SELECT"
+            custom:button="SELECT"
+            android:textColor="@android:color/white"
+            />
+
+    <com.vokal.afergulator.widget.ButtonNES
+            android:id="@+id/buttonStart"
+            android:layout_width="wrap_content"
+            android:layout_height="96dp"
+            android:layout_toRightOf="@id/gameView"
+            android:layout_alignBottom="@id/buttonSelect"
+            android:layout_alignParentRight="true"
+            style="@android:style/Widget.Holo.Light.Button"
+            android:text="START"
+            custom:button="START"
+            android:textColor="@android:color/white"
+            />
 
 
 </RelativeLayout>
