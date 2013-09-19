@@ -7,6 +7,7 @@ import "C"
 
 import (
 	"log"
+	"fmt"
 	"runtime"
 	"github.com/scottferg/Fergulator/nes"
 )
@@ -43,6 +44,11 @@ func Java_com_vokal_afergulator_Engine_loadRom(env *C.JNIEnv, clazz C.jclass, jb
 	nes.GameName = GetJavaString(env, name)
 	rom := GetJavaByteArray(env, jbytes)
 
+	if len(cachePath) > 0 {
+		nes.SaveStateFile = fmt.Sprintf("%s/%s.save", cachePath, nes.GameName)
+		nes.BatteryRamFile = fmt.Sprintf("%s/%s.save", cachePath, nes.GameName)
+	}
+
 	log.Printf("%v ROM: %v (%v kb)\n", string(rom[:3]), nes.GameName, len(rom) / 1024)
 
 	videoTick, err := nes.Init(rom, func(i int16) {}, GetKey)
@@ -61,14 +67,16 @@ func Java_com_vokal_afergulator_Engine_loadRom(env *C.JNIEnv, clazz C.jclass, jb
 }
 
 //export Java_com_vokal_afergulator_Engine_pauseEmulator
-func Java_com_vokal_afergulator_Engine_pauseEmulator(env *C.JNIEnv, clazz C.jclass, pause C.jboolean) {
-	if len(nes.SaveStateFile) > 0 {
-		if (pause == 1) {
+func Java_com_vokal_afergulator_Engine_pauseEmulator(env *C.JNIEnv, clazz C.jclass, pause C.int) {
+	if len(nes.GameName) > 0 {
+		if (pause == -1) {
+			// TODO: safe pause emulator
+		} else if (pause == 1) {
 			log.Printf("saving: %v\n", nes.SaveStateFile)
 			nes.SaveGameState()
 		} else {
-			//			log.Printf("loading: %v\n", save)
-			//			nes.LoadGameState()
+			log.Printf("loading: %v\n", nes.SaveStateFile)
+			nes.LoadGameState()
 		}
 	}
 }
@@ -81,12 +89,7 @@ func Java_com_vokal_afergulator_Engine_keyEvent(env *C.JNIEnv, clazz C.jclass, k
 		if event == 1 {
 			nes.Pads[player].KeyDown(int(key), p)
 		} else {
-			if key == 8 {
-//				nes.Reset()  // TODO: nes method to reset
-				log.Println("REST NOT IMPLEMENTED")
-			} else {
-				nes.Pads[player].KeyUp(int(key), p)
-			}
+			nes.Pads[player].KeyUp(int(key), p)
 		}
 	}
 }

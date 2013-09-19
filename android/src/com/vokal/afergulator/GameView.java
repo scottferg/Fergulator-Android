@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Point;
 import android.opengl.GLSurfaceView;
 import android.os.Build;
+import android.os.Environment;
 import android.util.AttributeSet;
 import android.util.Log;
 
@@ -40,8 +41,10 @@ public class GameView extends GLSurfaceView
         setEGLContextClientVersion(2);
         setRenderer(this);
         setDebugFlags(DEBUG_CHECK_GL_ERROR | DEBUG_CHECK_GL_ERROR);
-        if (!isInEditMode())
-            Engine.setFilePath(ctx.getExternalCacheDir().getAbsolutePath());
+        if (!isInEditMode()) {
+//            Engine.setFilePath(ctx.getExternalCacheDir().getAbsolutePath());
+            Engine.setFilePath(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath());
+        }
     }
 
     public boolean loadGame(InputStream is, String name) throws IOException {
@@ -82,17 +85,5 @@ public class GameView extends GLSurfaceView
     @Override
     public void onDrawFrame(GL10 gl) {
         Engine.drawFrame();
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        Engine.resume();
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        Engine.pause();
     }
 }

@@ -4,8 +4,7 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.os.Bundle;
 import android.view.*;
-import android.widget.ArrayAdapter;
-import android.widget.TextView;
+import android.widget.*;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -57,15 +56,15 @@ public class MainActivity extends Activity implements ActionBar.OnNavigationList
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.menu_nes_select:
-                Engine.simulatePress(ButtonNES.Key.SELECT, 0);
+            case R.id.menu_nes_load:
+                Engine.resume();
                 return true;
-            case R.id.menu_nes_start:
-                Engine.simulatePress(ButtonNES.Key.START, 0);
+            case R.id.menu_nes_save:
+                Engine.pause();
                 return true;
-//            case R.id.menu_nes_restart:
-//                mBtnReset.press();
-//                return true;
+            case R.id.menu_nes_shutdown:
+                Toast.makeText(this, "power down not implemented yet", Toast.LENGTH_SHORT).show();
+                return true;
         }
         return super.onOptionsItemSelected(item);
     }

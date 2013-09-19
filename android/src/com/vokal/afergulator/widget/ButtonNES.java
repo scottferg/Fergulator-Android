@@ -18,7 +18,7 @@ public class ButtonNES extends Button implements View.OnTouchListener {
     private static final String TAG = ButtonNES.class.getSimpleName();
 
     public static enum Key {
-        A, B, SELECT, START, UP, DOWN, LEFT, RIGHT, RESET
+        A, B, SELECT, START, UP, DOWN, LEFT, RIGHT
     }
 
     private Key         mButton;
