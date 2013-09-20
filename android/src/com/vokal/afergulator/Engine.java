@@ -12,6 +12,7 @@ public class Engine {
     public static native void setFilePath(String path);
     public static native void pauseEmulator(int state);
     private static native void keyEvent(int key, int down, int player);
+    public static native void createAudioEngine();
 
 	static {
 		System.loadLibrary("Fergulator");
