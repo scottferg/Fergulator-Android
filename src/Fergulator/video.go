@@ -11,6 +11,7 @@ import "C"
 
 import (
 	"fmt"
+	"github.com/scottferg/Go-SDL/gfx"
 	"log"
 	"unsafe"
 )
@@ -18,12 +19,13 @@ import (
 type Video struct {
 	prog          C.GLuint
 	texture       C.GLuint
+	fpsmanager    *gfx.FPSmanager
 	width, height int
 	textureUni    int
 	pixelBuffer   chan []uint32
 }
 
-var gfx Video
+var vid Video
 
 const vertShaderSrcDef = `
 	attribute vec4 vPosition;
@@ -51,6 +53,9 @@ func (game *Video) initGL() {
 	log.Printf("GL_VERSION: %v GL_RENDERER: %v GL_VENDOR %v\n",
 		GetString(C.GL_VERSION), GetString(C.GL_RENDERER), GetString(C.GL_VENDOR))
 	log.Printf("GL_EXTENSIONS: %v\n", GetString(C.GL_EXTENSIONS))
+
+	game.fpsmanager = gfx.NewFramerate()
+	game.fpsmanager.SetFramerate(60)
 
 	C.glClearColor(0.0, 0.0, 0.0, 1.0)
 	C.glEnable(C.GL_CULL_FACE)
@@ -104,8 +109,8 @@ func (game *Video) drawFrame() {
 	C.glActiveTexture(C.GL_TEXTURE0)
 	C.glBindTexture(C.GL_TEXTURE_2D, game.texture)
 
-	if gfx.pixelBuffer != nil {
-		if bmp := <-gfx.pixelBuffer; bmp != nil {
+	if vid.pixelBuffer != nil {
+		if bmp := <-vid.pixelBuffer; bmp != nil {
 			C.glTexImage2D(C.GL_TEXTURE_2D, 0, C.GL_RGBA, 240, 224, 0, C.GL_RGBA, C.GL_UNSIGNED_BYTE, unsafe.Pointer(&bmp[0]))
 		}
 	}
@@ -115,6 +120,8 @@ func (game *Video) drawFrame() {
 	C.glDrawArrays(C.GL_TRIANGLES, 0, 6)
 
 	checkGLError()
+
+	game.fpsmanager.FramerateDelay()
 }
 
 func createProgram(vertShaderSrc string, fragShaderSrc string) C.GLuint {
@@ -243,7 +250,7 @@ func Java_com_vokal_afergulator_Engine_drawFrame(env *C.JNIEnv, clazz C.jclass) 
 			log.Fatalf("panic: drawFrame: %v\n", err)
 		}
 	}()
-	gfx.drawFrame()
+	vid.drawFrame()
 }
 
 //export Java_com_vokal_afergulator_Engine_init
@@ -253,7 +260,7 @@ func Java_com_vokal_afergulator_Engine_init(env *C.JNIEnv, clazz C.jclass) {
 			log.Fatalf("panic: init: %v\n", err)
 		}
 	}()
-	gfx.initGL()
+	vid.initGL()
 }
 
 //export Java_com_vokal_afergulator_Engine_resize
@@ -263,5 +270,5 @@ func Java_com_vokal_afergulator_Engine_resize(env *C.JNIEnv, clazz C.jclass, wid
 			log.Fatalf("panic: resize: %v\n", err)
 		}
 	}()
-	gfx.resize(int(width), int(height))
+	vid.resize(int(width), int(height))
 }
