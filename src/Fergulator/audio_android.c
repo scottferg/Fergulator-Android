@@ -23,6 +23,14 @@ static const SLEnvironmentalReverbSettings reverbSettings = SL_I3DL2_ENVIRONMENT
 static short *nextBuffer;
 static unsigned nextSize;
 
+typedef struct threadLock_{
+  pthread_mutex_t m;
+  pthread_cond_t  c;
+  unsigned char   s;
+} threadLock;
+
+static void* lock;
+
 // 8 kHz mono 16-bit signed little endian
 static const char android[] =
 #include "android_clip.h"
@@ -39,12 +47,19 @@ static SLDataFormat_PCM format_pcm = {
 };
 
 void playTest() {
-
     __android_log_print(ANDROID_LOG_INFO, "AUDIO", "Play Test......");
-    if (NULL != bqPlayerBufferQueue) {
-        (*bqPlayerBufferQueue)->Enqueue(bqPlayerBufferQueue, (short *) android, sizeof(android));
+    (*bqPlayerBufferQueue)->Enqueue(bqPlayerBufferQueue, (short *) android, sizeof(android));
+//    playSamples((short *) android);
+}
+
+// enqueue the buffer
+void playSamples(SLmillibel buffer[])
+{
+    if (NULL != lock && NULL != bqPlayerBufferQueue) {
+        waitThreadLock(lock);
+        (*bqPlayerBufferQueue)->Enqueue(bqPlayerBufferQueue, (short *) buffer, 2048);
     } else {
-        __android_log_print(ANDROID_LOG_INFO, "AUDIO", "Buffer Queue is NULL!");
+        __android_log_print(ANDROID_LOG_INFO, "AUDIO", "Lock or Queue IS NULL!");
     }
 }
 
@@ -54,29 +69,10 @@ SLresult startAudio() {
     if (SL_RESULT_SUCCESS == result)
         result = createBufferQueueAudioPlayer();
 
-    if (result == 0) playTest();
+    if (result == 0) lock = createThreadLock();
+//    if (result == 0) playTest();  // use SL_SAMPLINGRATE_8
 
     return result;
-}
-
-SLVolumeItf getVolume()
-{
-   (*bqPlayerVolume)->SetVolumeLevel(bqPlayerVolume, (SLmillibel) 0x7FFF);
-   return bqPlayerVolume;
-}
-
-
-SLAndroidSimpleBufferQueueItf* getAudioQueue()
-{
-    return &bqPlayerBufferQueue;
-}
-
-// enqueue the buffer
-void playSamples(SLmillibel buffer)
-{
-    if (NULL != bqPlayerBufferQueue) {
-        (*bqPlayerBufferQueue)->Enqueue(bqPlayerBufferQueue, &buffer, 2048);
-    }
 }
 
 // create the engine and output mix objects
@@ -187,20 +183,19 @@ SLresult createBufferQueueAudioPlayer() {
 // this callback handler is called every time a buffer finishes playing
 void bqPlayerCallback(SLAndroidSimpleBufferQueueItf bq, void *context)
 {
-    __android_log_print(ANDROID_LOG_INFO, "AUDIO", "q");
+    notifyThreadLock(lock);
+//    __android_log_print(ANDROID_LOG_INFO, "AUDIO", "q");
+}
 
-//    assert(bq == bqPlayerBufferQueue);
-//    assert(NULL == context);
-    // for streaming playback, replace this test by logic to find and fill the next buffer
-//    if (NULL != nextBuffer && 0 != nextSize) {
-//        SLresult result;
-//        // enqueue another buffer
-//        result = (*bqPlayerBufferQueue)->Enqueue(bqPlayerBufferQueue, nextBuffer, nextSize);
-//        // the most likely other result is SL_RESULT_BUFFER_INSUFFICIENT,
-//        // which for this code example would indicate a programming error
-//        assert(SL_RESULT_SUCCESS == result);
-//        (void)result;
-//    }
+SLVolumeItf getVolume()
+{
+   (*bqPlayerVolume)->SetVolumeLevel(bqPlayerVolume, (SLmillibel) 0x7FFF);
+   return bqPlayerVolume;
+}
+
+SLAndroidSimpleBufferQueueItf* getAudioQueue()
+{
+    return &bqPlayerBufferQueue;
 }
 
 void shutdownAudio() {
@@ -229,4 +224,63 @@ void shutdownAudio() {
         engineEngine = NULL;
     }
 
+}
+
+//----------------------------------------------------------------------
+// thread Locks
+// to ensure synchronisation between callbacks and processing code
+void* createThreadLock(void)
+{
+  threadLock  *p;
+  p = (threadLock*) malloc(sizeof(threadLock));
+  if (p == NULL)
+    return NULL;
+  memset(p, 0, sizeof(threadLock));
+  if (pthread_mutex_init(&(p->m), (pthread_mutexattr_t*) NULL) != 0) {
+    free((void*) p);
+    return NULL;
+  }
+  if (pthread_cond_init(&(p->c), (pthread_condattr_t*) NULL) != 0) {
+    pthread_mutex_destroy(&(p->m));
+    free((void*) p);
+    return NULL;
+  }
+  p->s = (unsigned char) 1;
+
+  return p;
+}
+
+int waitThreadLock(void *lock)
+{
+  threadLock  *p;
+  int   retval = 0;
+  p = (threadLock*) lock;
+  pthread_mutex_lock(&(p->m));
+  while (!p->s) {
+    pthread_cond_wait(&(p->c), &(p->m));
+  }
+  p->s = (unsigned char) 0;
+  pthread_mutex_unlock(&(p->m));
+}
+
+void notifyThreadLock(void *lock)
+{
+  threadLock *p;
+  p = (threadLock*) lock;
+  pthread_mutex_lock(&(p->m));
+  p->s = (unsigned char) 1;
+  pthread_cond_signal(&(p->c));
+  pthread_mutex_unlock(&(p->m));
+}
+
+void destroyThreadLock(void *lock)
+{
+  threadLock  *p;
+  p = (threadLock*) lock;
+  if (p == NULL)
+    return;
+  notifyThreadLock(p);
+  pthread_cond_destroy(&(p->c));
+  pthread_mutex_destroy(&(p->m));
+  free(p);
 }
