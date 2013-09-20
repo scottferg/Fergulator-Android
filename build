@@ -4,6 +4,8 @@ set -e
 
 if [ -e bin/linux_arm/Fergulator ]; then rm bin/linux_arm/Fergulator; fi
 
+rm -R pkg
+
 CC="$NDK_ROOT/bin/arm-linux-androideabi-gcc"
 CC=$CC GOPATH="`pwd`:$GOPATH" GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 $GOROOT/bin/go install \
     $GOFLAGS -v -ldflags="-android -shared -extld $CC -extldflags '-march=armv7-a -mfloat-abi=softfp -mfpu=vfpv3-d16'" \
