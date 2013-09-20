@@ -57,7 +57,7 @@ func Java_com_vokal_afergulator_Engine_loadRom(env *C.JNIEnv, clazz C.jclass, jb
 		return C.JNI_FALSE
 	}
 
-	gfx.pixelBuffer = videoTick
+	vid.pixelBuffer = videoTick
 
 	// Main runloop, in a separate goroutine so that
 	// the video rendering can happen on this one
