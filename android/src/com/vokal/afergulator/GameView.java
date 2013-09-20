@@ -19,8 +19,7 @@ import org.apache.commons.io.IOUtils;
 /**
  * Created by Nick on 9/6/13.
  */
-public class GameView extends GLSurfaceView
-        implements GLSurfaceView.Renderer {
+public class GameView extends GLSurfaceView implements GLSurfaceView.Renderer {
 
     private static final String TAG = GameView.class.getSimpleName();
 
