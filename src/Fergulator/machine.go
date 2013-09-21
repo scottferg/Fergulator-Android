@@ -20,6 +20,7 @@ var (
 func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	nes.AudioEnabled = true
+	defer audioOut.Close()
 }
 
 //export Java_com_vokal_afergulator_Engine_setFilePath
@@ -53,8 +54,6 @@ func Java_com_vokal_afergulator_Engine_loadRom(env *C.JNIEnv, clazz C.jclass, jb
 	log.Printf("%v ROM: %v (%v kb)\n", string(rom[:3]), nes.GameName, len(rom) / 1024)
 
 	audioOut = NewAudio()
-//	defer audioOut.Close()
-
 	videoTick, err := nes.Init(rom, audioOut.AppendSample, GetKey)
 	if err != nil {
 		log.Println(err)
