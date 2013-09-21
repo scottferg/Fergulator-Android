@@ -37,6 +37,9 @@ public class MainActivity extends Activity implements ActionBar.OnNavigationList
     protected void onResume() {
         super.onResume();
 
+        romAdapter = new RomAdapter();
+        getActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
+        getActionBar().setListNavigationCallbacks(romAdapter, this);
         gameView.onResume();
     }
 
@@ -44,6 +47,7 @@ public class MainActivity extends Activity implements ActionBar.OnNavigationList
     protected void onPause() {
         super.onPause();
 
+        Engine.pause();
         gameView.onPause();
     }
 
@@ -129,14 +133,14 @@ public class MainActivity extends Activity implements ActionBar.OnNavigationList
     public boolean onNavigationItemSelected(int itemPosition, long itemId) {
         if (itemPosition == 0) return false;
 
+        Engine.pause();
+
         String rom = romAdapter.getItem(itemPosition);
 
         InputStream is = null;
         try {
             is = getAssets().open("roms/" + rom);
             if (gameView.loadGame(is, rom)) {
-                getActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
-                getActionBar().setTitle(displayRomName(rom));
                 return true;
             }
         } catch (IOException e) {
@@ -152,5 +156,4 @@ public class MainActivity extends Activity implements ActionBar.OnNavigationList
         }
         return false;
     }
-
 }

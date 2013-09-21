@@ -4,21 +4,19 @@ package main
 #include <stdlib.h>
 #include <jni.h>
 #include <android/input.h>
-#include <GLES2/gl2.h>
-#cgo android LDFLAGS: -lGLESv2
 */
 import "C"
 
 import (
-	"fmt"
+	"github.com/scottferg/Fergulator/nes"
 	"github.com/scottferg/Go-SDL/gfx"
+	gl "github.com/scottferg/egles/es2"
 	"log"
-	"unsafe"
 )
 
 type Video struct {
-	prog          C.GLuint
-	texture       C.GLuint
+	prog          uint
+	texture       uint
 	fpsmanager    *gfx.FPSmanager
 	width, height int
 	textureUni    int
@@ -51,15 +49,15 @@ const fragShaderSrcDef = `
 
 func (game *Video) initGL() {
 	log.Printf("GL_VERSION: %v GL_RENDERER: %v GL_VENDOR %v\n",
-		GetString(C.GL_VERSION), GetString(C.GL_RENDERER), GetString(C.GL_VENDOR))
-	log.Printf("GL_EXTENSIONS: %v\n", GetString(C.GL_EXTENSIONS))
+		gl.GetString(gl.VERSION), gl.GetString(gl.RENDERER), gl.GetString(gl.VENDOR))
+	log.Printf("GL_EXTENSIONS: %v\n", gl.GetString(gl.EXTENSIONS))
 
 	game.fpsmanager = gfx.NewFramerate()
 	game.fpsmanager.SetFramerate(60)
 
-	C.glClearColor(0.0, 0.0, 0.0, 1.0)
-	C.glEnable(C.GL_CULL_FACE)
-	C.glEnable(C.GL_DEPTH_TEST)
+	gl.ClearColor(0.0, 0.0, 0.0, 1.0)
+	gl.Enable(gl.CULL_FACE)
+	gl.Enable(gl.DEPTH_TEST)
 
 	game.prog = createProgram(vertShaderSrcDef, fragShaderSrcDef)
 	posAttrib := attribLocation(game.prog, "vPosition")
@@ -67,30 +65,30 @@ func (game *Video) initGL() {
 	game.textureUni = uniformLocation(game.prog, "texture")
 
 	game.texture = GenTexture()
-	C.glActiveTexture(C.GL_TEXTURE0)
-	C.glBindTexture(C.GL_TEXTURE_2D, game.texture)
+	gl.ActiveTexture(gl.TEXTURE0)
+	gl.BindTexture(gl.TEXTURE_2D, game.texture)
 
-	C.glTexParameteri(C.GL_TEXTURE_2D, C.GL_TEXTURE_MIN_FILTER, C.GL_NEAREST)
-	C.glTexParameteri(C.GL_TEXTURE_2D, C.GL_TEXTURE_MAG_FILTER, C.GL_NEAREST)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
+	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
 
-	C.glUseProgram(game.prog)
-	C.glEnableVertexAttribArray(C.GLuint(posAttrib))
-	C.glEnableVertexAttribArray(C.GLuint(texCoordAttr))
+	gl.UseProgram(game.prog)
+	gl.EnableVertexAttribArray(posAttrib)
+	gl.EnableVertexAttribArray(texCoordAttr)
 
 	vertVBO := GenBuffer()
 	checkGLError()
-	C.glBindBuffer(C.GL_ARRAY_BUFFER, vertVBO)
+	gl.BindBuffer(gl.ARRAY_BUFFER, vertVBO)
 	verts := []float32{-1.0, 1.0, -1.0, -1.0, 1.0, -1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0}
-	C.glBufferData(C.GL_ARRAY_BUFFER, C.GLsizeiptr(len(verts)*int(unsafe.Sizeof(verts[0]))), unsafe.Pointer(&verts[0]), C.GL_STATIC_DRAW)
+	gl.BufferData(gl.ARRAY_BUFFER, len(verts)*4, gl.Void(&verts[0]), gl.STATIC_DRAW)
 
 	textCoorBuf := GenBuffer()
 	checkGLError()
-	C.glBindBuffer(C.GL_ARRAY_BUFFER, textCoorBuf)
+	gl.BindBuffer(gl.ARRAY_BUFFER, textCoorBuf)
 	texVerts := []float32{0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0}
-	C.glBufferData(C.GL_ARRAY_BUFFER, C.GLsizeiptr(len(texVerts)*int(unsafe.Sizeof(texVerts[0]))), unsafe.Pointer(&texVerts[0]), C.GL_STATIC_DRAW)
+	gl.BufferData(gl.ARRAY_BUFFER, len(texVerts)*4, gl.Void(&texVerts[0]), gl.STATIC_DRAW)
 
-	C.glVertexAttribPointer(C.GLuint(posAttrib), 2, C.GL_FLOAT, C.GL_FALSE, 0, unsafe.Pointer(uintptr(0)))
-	C.glVertexAttribPointer(C.GLuint(texCoordAttr), 2, C.GL_FLOAT, C.GL_FALSE, 0, unsafe.Pointer(uintptr(0)))
+	gl.VertexAttribPointer(posAttrib, 2, gl.FLOAT, false, 0, 0)
+	gl.VertexAttribPointer(texCoordAttr, 2, gl.FLOAT, false, 0, 0)
 
 }
 
@@ -98,149 +96,96 @@ func (game *Video) resize(width, height int) {
 	game.width = width
 	game.height = height
 
-	C.glViewport(0, 0, C.GLsizei(width), C.GLsizei(height))
+	gl.Viewport(0, 0, width, height)
 }
 
 func (game *Video) drawFrame() {
-	C.glClear(C.GL_COLOR_BUFFER_BIT | C.GL_DEPTH_BUFFER_BIT)
+	gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+	gl.UseProgram(game.prog)
+	gl.ActiveTexture(gl.TEXTURE0)
+	gl.BindTexture(gl.TEXTURE_2D, game.texture)
 
-	C.glUseProgram(game.prog)
-
-	C.glActiveTexture(C.GL_TEXTURE0)
-	C.glBindTexture(C.GL_TEXTURE_2D, game.texture)
-
-	if vid.pixelBuffer != nil {
+	if nes.Running && vid.pixelBuffer != nil {
 		if bmp := <-vid.pixelBuffer; bmp != nil {
-			C.glTexImage2D(C.GL_TEXTURE_2D, 0, C.GL_RGBA, 240, 224, 0, C.GL_RGBA, C.GL_UNSIGNED_BYTE, unsafe.Pointer(&bmp[0]))
+			gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 240, 224, 0,
+				gl.RGBA, gl.UNSIGNED_BYTE, gl.Void(&bmp[0]))
 		}
 	}
 
-	checkGLError()
-
-	C.glDrawArrays(C.GL_TRIANGLES, 0, 6)
-
-	checkGLError()
-
+	gl.DrawArrays(gl.TRIANGLES, 0, 6)
 	game.fpsmanager.FramerateDelay()
 }
 
-func createProgram(vertShaderSrc string, fragShaderSrc string) C.GLuint {
-	vertShader := loadShader(C.GL_VERTEX_SHADER, vertShaderSrc)
-	fragShader := loadShader(C.GL_FRAGMENT_SHADER, fragShaderSrc)
-	prog := C.glCreateProgram()
+func createProgram(vertShaderSrc string, fragShaderSrc string) uint {
+	vertShader := loadShader(gl.VERTEX_SHADER, vertShaderSrc)
+	fragShader := loadShader(gl.FRAGMENT_SHADER, fragShaderSrc)
+
+	prog := gl.CreateProgram()
 	if prog == 0 {
 		panic("Failed to create shader program")
 	}
-	C.glAttachShader(prog, vertShader)
-	checkGLError()
-	C.glAttachShader(prog, fragShader)
-	checkGLError()
-	C.glLinkProgram(prog)
-	var linkStatus C.GLint
-	C.glGetProgramiv(prog, C.GL_LINK_STATUS, &linkStatus)
-	if linkStatus != C.GL_TRUE {
-		log := GetProgramInfoLog(prog)
-		panic(fmt.Errorf("Failed to link program: %v", log))
-	}
+
+	gl.AttachShader(prog, vertShader)
+	gl.AttachShader(prog, fragShader)
+	gl.LinkProgram(prog)
+
+	gl.GetProgramiv(prog, gl.LINK_STATUS, make([]int32, 1))
+
 	return prog
 }
 
-func loadShader(shaderType C.GLenum, source string) C.GLuint {
-	handle := C.glCreateShader(shaderType)
+func loadShader(shaderType uint, source string) uint {
+	handle := gl.CreateShader(shaderType)
 	if handle == 0 {
-		panic(fmt.Errorf("Failed to create shader of type %v", shaderType))
+		log.Fatalf("Failed to create shader of type %v", shaderType)
 	}
-	sourceC := C.CString(source)
-	defer C.free(unsafe.Pointer(sourceC))
-	C.glShaderSource(handle, 1, (**C.GLchar)(unsafe.Pointer(&sourceC)), (*C.GLint)(unsafe.Pointer(nil)))
-	C.glCompileShader(handle)
-	var compiled C.GLint
-	C.glGetShaderiv(handle, C.GL_COMPILE_STATUS, &compiled)
-	if compiled != C.GL_TRUE {
-		log := GetShaderInfoLog(handle)
-		panic(fmt.Errorf("Failed to compile shader: %v, shader: %v", log, source))
-	}
+
+	gl.ShaderSource(handle, source)
+	gl.CompileShader(handle)
+
+	gl.GetShaderiv(handle, gl.COMPILE_STATUS, make([]int32, 1))
+
 	return handle
 }
 
-func attribLocation(prog C.GLuint, name string) int {
-	nameC := C.CString(name)
-	defer C.free(unsafe.Pointer(nameC))
-	attrib := int(C.glGetAttribLocation(C.GLuint(prog), (*C.GLchar)(unsafe.Pointer(nameC))))
+func attribLocation(prog uint, name string) uint {
+	attrib := gl.GetAttribLocation(prog, name)
 	checkGLError()
+
 	if attrib == -1 {
-		panic(fmt.Errorf("Failed to find attrib position for %v", name))
+		log.Fatalf("Failed to find attrib position for %v", name)
 	}
+
+	return uint(attrib)
+}
+
+func uniformLocation(prog uint, name string) int {
+	attrib := gl.GetUniformLocation(prog, name)
+	checkGLError()
+
+	if attrib == -1 {
+		log.Fatalf("Failed to find attrib position for %v", name)
+	}
+
 	return attrib
 }
 
-func uniformLocation(prog C.GLuint, name string) int {
-	nameC := C.CString(name)
-	defer C.free(unsafe.Pointer(nameC))
-	attrib := int(C.glGetUniformLocation(C.GLuint(prog), (*C.GLchar)(unsafe.Pointer(nameC))))
-	checkGLError()
-	if attrib == -1 {
-		panic(fmt.Errorf("Failed to find attrib position for %v", name))
-	}
-	return attrib
+func GenBuffer() uint {
+	var buf uint
+	gl.GenBuffers(1, gl.Void(&buf))
+	return buf
 }
 
-func GenBuffer() C.GLuint {
-	var buf C.GLuint
-	C.glGenBuffers(1, &buf)
-	return C.GLuint(buf)
-}
-
-func GenTexture() C.GLuint {
-	var tex C.GLuint
-	C.glGenTextures(1, &tex)
-	return C.GLuint(tex)
-}
-
-func GetShaderInfoLog(shader C.GLuint) string {
-	var logLen C.GLint
-	C.glGetShaderiv(shader, C.GL_INFO_LOG_LENGTH, &logLen)
-	var c C.GLchar
-	logLenBytes := int(logLen) * int(unsafe.Sizeof(c))
-	log := C.malloc(C.size_t(logLenBytes))
-	if log == nil {
-		panic("Failed to allocate shader log buffer")
-	}
-	defer C.free(log)
-	C.glGetShaderInfoLog(C.GLuint(shader), C.GLsizei(logLen), (*C.GLsizei)(unsafe.Pointer(nil)), (*C.GLchar)(log))
-	return string(C.GoBytes(log, C.int(logLenBytes)))
-}
-
-func GetProgramInfoLog(program C.GLuint) string {
-	var logLen C.GLint
-	C.glGetProgramiv(program, C.GL_INFO_LOG_LENGTH, &logLen)
-	var c C.GLchar
-	logLenBytes := int(logLen) * int(unsafe.Sizeof(c))
-	log := C.malloc(C.size_t(logLenBytes))
-	if log == nil {
-		panic("Failed to allocate shader log buffer")
-	}
-	defer C.free(log)
-	C.glGetProgramInfoLog(C.GLuint(program), C.GLsizei(logLen), (*C.GLsizei)(unsafe.Pointer(nil)), (*C.GLchar)(log))
-	return string(C.GoBytes(log, C.int(logLenBytes)))
-}
-
-func GetString(name C.GLenum) string {
-	val := C.glGetString(C.GLenum(name))
-	return C.GoString((*C.char)(unsafe.Pointer(val)))
+func GenTexture() uint {
+	var tex uint
+	gl.GenBuffers(1, gl.Void(&tex))
+	return tex
 }
 
 func checkGLError() {
-	if glErr := C.glGetError(); glErr != C.GL_NO_ERROR {
-		panic(fmt.Errorf("C.gl error: %v", glErr))
+	if glErr := gl.GetError(); glErr != gl.NO_ERROR {
+		log.Fatalf("gl. error: %v", glErr)
 	}
-}
-
-// Use JNI_OnLoad to ensure that the go runtime is initialized at a predictable time,
-// namely at System.loadLibrary()
-//export JNI_OnLoad
-func JNI_OnLoad(vm *C.JavaVM, reserved unsafe.Pointer) C.jint {
-	return C.JNI_VERSION_1_6
 }
 
 //export Java_com_vokal_afergulator_Engine_drawFrame
