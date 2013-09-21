@@ -13,28 +13,59 @@ static SLEnvironmentalReverbItf outputMixEnvironmentalReverb = NULL;
 static SLObjectItf bqPlayerObject = NULL;
 static SLPlayItf bqPlayerPlay;
 static SLAndroidSimpleBufferQueueItf bqPlayerBufferQueue;
+static SLAndroidSimpleBufferQueueState bpPlayerBufferQueueState;
 static SLEffectSendItf bqPlayerEffectSend;
 static SLVolumeItf bqPlayerVolume;
 
 // aux effect on the output mix, used by the buffer queue player
 static const SLEnvironmentalReverbSettings reverbSettings = SL_I3DL2_ENVIRONMENT_PRESET_STONECORRIDOR;
 
-// pointer and size of the next player buffer to enqueue, and number of remaining buffers
-static short *nextBuffer;
-static unsigned nextSize;
+// buffers
+short *outputBuffer;
+short *playBuffer;
+circular_buffer *outrb;
+int outBufSamples = 2048;
 
-typedef struct threadLock_{
-  pthread_mutex_t m;
-  pthread_cond_t  c;
-  unsigned char   s;
-} threadLock;
+int numQ = 0;
 
-static void* lock;
+// send SLmillibel[outBufSamples] to the circular buffer queue
+void playSamples(SLmillibel buffer[]) {
+    if (0 == numQ++) {
+       (*bqPlayerBufferQueue)->Enqueue(bqPlayerBufferQueue, buffer, outBufSamples);
+    } else {
+        write_circular_buffer_bytes(outrb, (char *) buffer, outBufSamples);
+    }
+}
 
-// 8 kHz mono 16-bit signed little endian
-static const char android[] =
-#include "android_clip.h"
-;
+// this callback handler is called every time a buffer finishes playing
+void bqPlayerCallback(SLAndroidSimpleBufferQueueItf bq, void *context) {
+    numQ %= 4;
+    if (--numQ > 0) {
+        read_circular_buffer_bytes(outrb, (char *) playBuffer, outBufSamples);
+        (*bqPlayerBufferQueue)->Enqueue(bqPlayerBufferQueue, playBuffer, outBufSamples);
+    }
+}
+
+SLresult startAudio() {
+    SLresult result = createAudioEngine();
+
+    if (SL_RESULT_SUCCESS == result)
+        result = createBufferQueueAudioPlayer();
+
+//    if (result == 0) playTest();  // use SL_SAMPLINGRATE_8
+
+    outrb = create_circular_buffer(outBufSamples * sizeof(short)*4);
+    outputBuffer = (short *) calloc(outBufSamples, sizeof(short));
+    playBuffer = (short *) calloc(outBufSamples, sizeof(short));
+
+    return result;
+}
+
+void playTest() {
+    __android_log_print(ANDROID_LOG_INFO, "AUDIO", "Play Test......");
+    (*bqPlayerBufferQueue)->Enqueue(bqPlayerBufferQueue, (short *) android, sizeof(android));
+//    playSamples((short *) android);
+}
 
 static SLDataFormat_PCM format_pcm = {
     SL_DATAFORMAT_PCM,
@@ -45,35 +76,6 @@ static SLDataFormat_PCM format_pcm = {
     SL_SPEAKER_FRONT_CENTER,
     SL_BYTEORDER_LITTLEENDIAN
 };
-
-void playTest() {
-    __android_log_print(ANDROID_LOG_INFO, "AUDIO", "Play Test......");
-    (*bqPlayerBufferQueue)->Enqueue(bqPlayerBufferQueue, (short *) android, sizeof(android));
-//    playSamples((short *) android);
-}
-
-// enqueue the buffer
-void playSamples(SLmillibel buffer[])
-{
-    if (NULL != lock && NULL != bqPlayerBufferQueue) {
-        waitThreadLock(lock);
-        (*bqPlayerBufferQueue)->Enqueue(bqPlayerBufferQueue, (short *) buffer, 2048);
-    } else {
-        __android_log_print(ANDROID_LOG_INFO, "AUDIO", "Lock or Queue IS NULL!");
-    }
-}
-
-SLresult startAudio() {
-    SLresult result = createAudioEngine();
-
-    if (SL_RESULT_SUCCESS == result)
-        result = createBufferQueueAudioPlayer();
-
-    if (result == 0) lock = createThreadLock();
-//    if (result == 0) playTest();  // use SL_SAMPLINGRATE_8
-
-    return result;
-}
 
 // create the engine and output mix objects
 SLresult createAudioEngine() {
@@ -180,13 +182,6 @@ SLresult createBufferQueueAudioPlayer() {
     return result;
 }
 
-// this callback handler is called every time a buffer finishes playing
-void bqPlayerCallback(SLAndroidSimpleBufferQueueItf bq, void *context)
-{
-    notifyThreadLock(lock);
-//    __android_log_print(ANDROID_LOG_INFO, "AUDIO", "q");
-}
-
 SLVolumeItf getVolume()
 {
    (*bqPlayerVolume)->SetVolumeLevel(bqPlayerVolume, (SLmillibel) 0x7FFF);
@@ -224,63 +219,74 @@ void shutdownAudio() {
         engineEngine = NULL;
     }
 
+    // free_circular_buffer
+    if (outrb != NULL) {
+        free(outrb->buffer);
+        free(outrb);
+    }
 }
 
-//----------------------------------------------------------------------
-// thread Locks
-// to ensure synchronisation between callbacks and processing code
-void* createThreadLock(void)
-{
-  threadLock  *p;
-  p = (threadLock*) malloc(sizeof(threadLock));
-  if (p == NULL)
-    return NULL;
-  memset(p, 0, sizeof(threadLock));
-  if (pthread_mutex_init(&(p->m), (pthread_mutexattr_t*) NULL) != 0) {
-    free((void*) p);
+circular_buffer* create_circular_buffer(int bytes){
+  circular_buffer *p;
+  if ((p = calloc(1, sizeof(circular_buffer))) == NULL) {
     return NULL;
   }
-  if (pthread_cond_init(&(p->c), (pthread_condattr_t*) NULL) != 0) {
-    pthread_mutex_destroy(&(p->m));
-    free((void*) p);
-    return NULL;
-  }
-  p->s = (unsigned char) 1;
+  p->size = bytes;
+  p->wp = p->rp = 0;
 
+  if ((p->buffer = calloc(bytes, sizeof(char))) == NULL) {
+    free (p);
+    return NULL;
+  }
   return p;
 }
 
-int waitThreadLock(void *lock)
-{
-  threadLock  *p;
-  int   retval = 0;
-  p = (threadLock*) lock;
-  pthread_mutex_lock(&(p->m));
-  while (!p->s) {
-    pthread_cond_wait(&(p->c), &(p->m));
+int checkspace_circular_buffer(circular_buffer *p, int writeCheck){
+  int wp = p->wp, rp = p->rp, size = p->size;
+  if(writeCheck){
+    if (wp > rp) return rp - wp + size - 1;
+    else if (wp < rp) return rp - wp - 1;
+    else return size - 1;
   }
-  p->s = (unsigned char) 0;
-  pthread_mutex_unlock(&(p->m));
+  else {
+    if (wp > rp) return wp - rp;
+    else if (wp < rp) return wp - rp + size;
+    else return 0;
+  }
 }
 
-void notifyThreadLock(void *lock)
-{
-  threadLock *p;
-  p = (threadLock*) lock;
-  pthread_mutex_lock(&(p->m));
-  p->s = (unsigned char) 1;
-  pthread_cond_signal(&(p->c));
-  pthread_mutex_unlock(&(p->m));
+int read_circular_buffer_bytes(circular_buffer *p, char *out, int bytes){
+  int remaining;
+  int bytesread, size = p->size;
+  int i=0, rp = p->rp;
+  char *buffer = p->buffer;
+  if ((remaining = checkspace_circular_buffer(p, 0)) == 0) {
+    return 0;
+  }
+  bytesread = bytes > remaining ? remaining : bytes;
+  for(i=0; i < bytesread; i++){
+    out[i] = buffer[rp++];
+    if(rp == size) rp = 0;
+  }
+  p->rp = rp;
+  return bytesread;
 }
 
-void destroyThreadLock(void *lock)
-{
-  threadLock  *p;
-  p = (threadLock*) lock;
-  if (p == NULL)
-    return;
-  notifyThreadLock(p);
-  pthread_cond_destroy(&(p->c));
-  pthread_mutex_destroy(&(p->m));
-  free(p);
+int write_circular_buffer_bytes(circular_buffer *p, const char *in, int bytes){
+  int remaining;
+  int byteswrite, size = p->size;
+  int i=0, wp = p->wp;
+  char *buffer = p->buffer;
+  if ((remaining = checkspace_circular_buffer(p, 1)) == 0) {
+    return 0;
+  }
+  byteswrite = bytes > remaining ? remaining : bytes;
+  for(i=0; i < byteswrite; i++){
+    buffer[wp++] = in[i];
+    if(wp == size) wp = 0;
+  }
+  p->wp = wp;
+  return byteswrite;
 }
+
+
