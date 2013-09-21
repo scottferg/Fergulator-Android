@@ -10,7 +10,9 @@ public class Engine {
 
     public static native boolean loadRom(byte[] bytes, String name);
     public static native void setFilePath(String path);
-    public static native void pauseEmulator(int state);
+    public static native void pauseEmulator();
+    public static native void saveState();
+    public static native void loadState();
     private static native void keyEvent(int key, int down, int player);
     public static native void createAudioEngine();
 
@@ -19,15 +21,15 @@ public class Engine {
 	}
 
     public static void resume() {
-        pauseEmulator(0);
+        pauseEmulator();
     }
 
     public static void pause() {
-        pauseEmulator(1);
+        pauseEmulator();
     }
 
     public static void reset() {
-        pauseEmulator(-1);
+        pauseEmulator();
     }
 
     public static void buttonDown(ButtonNES.Key key) {

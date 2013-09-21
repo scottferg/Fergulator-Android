@@ -29,6 +29,8 @@ public class MainActivity extends Activity implements ActionBar.OnNavigationList
         romAdapter = new RomAdapter();
         getActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
         getActionBar().setListNavigationCallbacks(romAdapter, this);
+        getActionBar().setDisplayOptions(
+                getActionBar().getDisplayOptions() ^ ActionBar.DISPLAY_SHOW_TITLE);
 
         gameView = (GameView) findViewById(R.id.gameView);
     }
@@ -37,9 +39,6 @@ public class MainActivity extends Activity implements ActionBar.OnNavigationList
     protected void onResume() {
         super.onResume();
 
-        romAdapter = new RomAdapter();
-        getActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
-        getActionBar().setListNavigationCallbacks(romAdapter, this);
         gameView.onResume();
     }
 
@@ -61,10 +60,10 @@ public class MainActivity extends Activity implements ActionBar.OnNavigationList
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_nes_load:
-                Engine.resume();
+                Engine.loadState();
                 return true;
             case R.id.menu_nes_save:
-                Engine.pause();
+                Engine.saveState();
                 return true;
             case R.id.menu_nes_shutdown:
                 Toast.makeText(this, "power down not implemented yet", Toast.LENGTH_SHORT).show();

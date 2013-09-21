@@ -76,7 +76,7 @@ func Java_com_vokal_afergulator_Engine_loadRom(env *C.JNIEnv, clazz C.jclass, jb
 }
 
 //export Java_com_vokal_afergulator_Engine_pauseEmulator
-func Java_com_vokal_afergulator_Engine_pauseEmulator(env *C.JNIEnv, clazz C.jclass, pause C.int) {
+func Java_com_vokal_afergulator_Engine_pauseEmulator(env *C.JNIEnv, clazz C.jclass) {
 	defer func() {
 		if err := recover(); err != nil {
 			log.Printf("panic: init: %v\n", err)
@@ -84,6 +84,28 @@ func Java_com_vokal_afergulator_Engine_pauseEmulator(env *C.JNIEnv, clazz C.jcla
 	}()
 
 	nes.Running = false
+}
+
+//export Java_com_vokal_afergulator_Engine_saveState
+func Java_com_vokal_afergulator_Engine_saveState(env *C.JNIEnv, clazz C.jclass) {
+	defer func() {
+		if err := recover(); err != nil {
+			log.Printf("panic: init: %v\n", err)
+		}
+	}()
+
+	nes.SaveGameState()
+}
+
+//export Java_com_vokal_afergulator_Engine_loadState
+func Java_com_vokal_afergulator_Engine_loadState(env *C.JNIEnv, clazz C.jclass) {
+	defer func() {
+		if err := recover(); err != nil {
+			log.Printf("panic: init: %v\n", err)
+		}
+	}()
+
+	nes.LoadGameState()
 }
 
 //export Java_com_vokal_afergulator_Engine_keyEvent
