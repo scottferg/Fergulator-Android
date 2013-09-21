@@ -65,7 +65,7 @@ func Java_com_vokal_afergulator_Engine_loadRom(env *C.JNIEnv, clazz C.jclass, jb
 		return C.JNI_FALSE
 	}
 
-	vid.pixelBuffer = videoTick
+	video.pixelBuffer = videoTick
 
 	nes.Running = true
 	// Main runloop, in a separate goroutine so that
