@@ -16,23 +16,23 @@ import (
 var SampleSize = 2048
 
 type Audio struct {
-	samples     []int16
+	samples     []C.SLmillibel
 	sampleIndex int
 	mutex       sync.Mutex
 }
 
 func NewAudio() *Audio {
 	return &Audio {
-		samples: make([]int16, SampleSize),
+		samples: make([]C.SLmillibel, SampleSize),
 	}
 }
 
 func (a *Audio) AppendSample(s int16) {
-	a.samples[a.sampleIndex] = s
+	a.samples[a.sampleIndex] = C.SLmillibel(s)
 	a.sampleIndex++
 
 	if a.sampleIndex == SampleSize {
-		C.playSamples(C.short(a.samples[0]))
+		C.playSamples(&a.samples[0])
 		a.sampleIndex = 0
 	}
 }
