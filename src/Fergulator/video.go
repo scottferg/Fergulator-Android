@@ -21,9 +21,10 @@ type Video struct {
 	width, height int
 	textureUni    int
 	pixelBuffer   chan []uint32
+	blank         [240 * 224]uint32
 }
 
-var vid Video
+var video Video
 
 const vertShaderSrcDef = `
 	attribute vec4 vPosition;
@@ -47,31 +48,31 @@ const fragShaderSrcDef = `
 	}
 `
 
-func (game *Video) initGL() {
+func (video *Video) initGL() {
 	log.Printf("GL_VERSION: %v GL_RENDERER: %v GL_VENDOR %v\n",
 		gl.GetString(gl.VERSION), gl.GetString(gl.RENDERER), gl.GetString(gl.VENDOR))
 	log.Printf("GL_EXTENSIONS: %v\n", gl.GetString(gl.EXTENSIONS))
 
-	game.fpsmanager = gfx.NewFramerate()
-	game.fpsmanager.SetFramerate(60)
+	video.fpsmanager = gfx.NewFramerate()
+	video.fpsmanager.SetFramerate(60)
 
 	gl.ClearColor(0.0, 0.0, 0.0, 1.0)
 	gl.Enable(gl.CULL_FACE)
 	gl.Enable(gl.DEPTH_TEST)
 
-	game.prog = createProgram(vertShaderSrcDef, fragShaderSrcDef)
-	posAttrib := attribLocation(game.prog, "vPosition")
-	texCoordAttr := attribLocation(game.prog, "vTexCoord")
-	game.textureUni = uniformLocation(game.prog, "texture")
+	video.prog = createProgram(vertShaderSrcDef, fragShaderSrcDef)
+	posAttrib := attribLocation(video.prog, "vPosition")
+	texCoordAttr := attribLocation(video.prog, "vTexCoord")
+	video.textureUni = uniformLocation(video.prog, "texture")
 
-	game.texture = GenTexture()
+	video.texture = GenTexture()
 	gl.ActiveTexture(gl.TEXTURE0)
-	gl.BindTexture(gl.TEXTURE_2D, game.texture)
+	gl.BindTexture(gl.TEXTURE_2D, video.texture)
 
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
 
-	gl.UseProgram(game.prog)
+	gl.UseProgram(video.prog)
 	gl.EnableVertexAttribArray(posAttrib)
 	gl.EnableVertexAttribArray(texCoordAttr)
 
@@ -92,28 +93,31 @@ func (game *Video) initGL() {
 
 }
 
-func (game *Video) resize(width, height int) {
-	game.width = width
-	game.height = height
+func (video *Video) resize(width, height int) {
+	video.width = width
+	video.height = height
 
 	gl.Viewport(0, 0, width, height)
 }
 
-func (game *Video) drawFrame() {
+func (video *Video) drawFrame() {
 	gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-	gl.UseProgram(game.prog)
+	gl.UseProgram(video.prog)
 	gl.ActiveTexture(gl.TEXTURE0)
-	gl.BindTexture(gl.TEXTURE_2D, game.texture)
+	gl.BindTexture(gl.TEXTURE_2D, video.texture)
 
-	if nes.Running && vid.pixelBuffer != nil {
-		if bmp := <-vid.pixelBuffer; bmp != nil {
+	if nes.Running && video.pixelBuffer != nil {
+		if bmp := <-video.pixelBuffer; bmp != nil {
 			gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 240, 224, 0,
 				gl.RGBA, gl.UNSIGNED_BYTE, gl.Void(&bmp[0]))
 		}
+	} else {
+		gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 240, 224, 0,
+			gl.RGBA, gl.UNSIGNED_BYTE, gl.Void(&video.blank[0]))
 	}
 
 	gl.DrawArrays(gl.TRIANGLES, 0, 6)
-	game.fpsmanager.FramerateDelay()
+	video.fpsmanager.FramerateDelay()
 }
 
 func createProgram(vertShaderSrc string, fragShaderSrc string) uint {
@@ -195,7 +199,7 @@ func Java_com_vokal_afergulator_Engine_drawFrame(env *C.JNIEnv, clazz C.jclass) 
 			log.Fatalf("panic: drawFrame: %v\n", err)
 		}
 	}()
-	vid.drawFrame()
+	video.drawFrame()
 }
 
 //export Java_com_vokal_afergulator_Engine_init
@@ -205,7 +209,7 @@ func Java_com_vokal_afergulator_Engine_init(env *C.JNIEnv, clazz C.jclass) {
 			log.Fatalf("panic: init: %v\n", err)
 		}
 	}()
-	vid.initGL()
+	video.initGL()
 }
 
 //export Java_com_vokal_afergulator_Engine_resize
@@ -215,5 +219,5 @@ func Java_com_vokal_afergulator_Engine_resize(env *C.JNIEnv, clazz C.jclass, wid
 			log.Fatalf("panic: resize: %v\n", err)
 		}
 	}()
-	vid.resize(int(width), int(height))
+	video.resize(int(width), int(height))
 }
