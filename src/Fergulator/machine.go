@@ -85,6 +85,17 @@ func Java_com_vokal_afergulator_Engine_pauseEmulator(env *C.JNIEnv, clazz C.jcla
 	nes.Running = false
 }
 
+//export Java_com_vokal_afergulator_Engine_enableAudio
+func Java_com_vokal_afergulator_Engine_enableAudio(env *C.JNIEnv, clazz C.jclass, enabled C.jboolean) {
+	defer func() {
+		if err := recover(); err != nil {
+			log.Printf("panic: enable sound: %v\n", err)
+		}
+	}()
+
+	nes.AudioEnabled = enabled == C.JNI_TRUE
+}
+
 //export Java_com_vokal_afergulator_Engine_saveState
 func Java_com_vokal_afergulator_Engine_saveState(env *C.JNIEnv, clazz C.jclass) {
 	defer func() {

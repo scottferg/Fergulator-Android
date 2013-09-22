@@ -20,43 +20,61 @@ static SLVolumeItf bqPlayerVolume;
 // aux effect on the output mix, used by the buffer queue player
 static const SLEnvironmentalReverbSettings reverbSettings = SL_I3DL2_ENVIRONMENT_PRESET_STONECORRIDOR;
 
-// buffers
-short *outputBuffer;
-short *playBuffer;
+// ring buffer
+SLmillibel *playBuffer;
 circular_buffer *outrb;
-int outBufSamples = 2048;
+int outBufSamples = 1024;
 
+static void* lock;
 int numQ = 0;
+int playing = 0;
 
-// send SLmillibel[outBufSamples] to the circular buffer queue
 void playSamples(SLmillibel buffer[]) {
-    if (0 == numQ++) {
-       (*bqPlayerBufferQueue)->Enqueue(bqPlayerBufferQueue, buffer, outBufSamples);
-    } else {
-        write_circular_buffer_bytes(outrb, (char *) buffer, outBufSamples);
+
+    if (playing == 0) {
+        (*bqPlayerBufferQueue)->Enqueue(bqPlayerBufferQueue, playBuffer, outBufSamples);
+        playing = 1;
+        return;
     }
+
+    notifyThreadLock(lock);
+    write_circular_buffer_bytes(outrb, buffer, outBufSamples);
+    numQ++;
 }
 
 // this callback handler is called every time a buffer finishes playing
 void bqPlayerCallback(SLAndroidSimpleBufferQueueItf bq, void *context) {
-    numQ %= 4;
-    if (--numQ > 0) {
-        read_circular_buffer_bytes(outrb, (char *) playBuffer, outBufSamples);
+    waitThreadLock(lock);
+
+    if (numQ > 4) numQ = 4;
+    if (numQ > 0) {
+        read_circular_buffer_bytes(outrb, playBuffer, outBufSamples);
         (*bqPlayerBufferQueue)->Enqueue(bqPlayerBufferQueue, playBuffer, outBufSamples);
+    } else {
+        (*bqPlayerBufferQueue)->Clear(bqPlayerBufferQueue);
+        playing = 0;
     }
+    if (--numQ < 0) numQ = 0;
 }
 
-SLresult startAudio() {
+SLresult startAudio(int minBufferSize) {
+
     SLresult result = createAudioEngine();
 
     if (SL_RESULT_SUCCESS == result)
         result = createBufferQueueAudioPlayer();
 
-//    if (result == 0) playTest();  // use SL_SAMPLINGRATE_8
+    outBufSamples = minBufferSize;
+    outrb = create_circular_buffer(outBufSamples * sizeof(SLmillibel)*4);
+    playBuffer = (SLmillibel *) calloc(outBufSamples, sizeof(SLmillibel));
 
-    outrb = create_circular_buffer(outBufSamples * sizeof(short)*4);
-    outputBuffer = (short *) calloc(outBufSamples, sizeof(short));
-    playBuffer = (short *) calloc(outBufSamples, sizeof(short));
+    lock = createThreadLock();
+    notifyThreadLock(lock);
+
+    if (result == 0) {
+        __android_log_print(ANDROID_LOG_INFO, "AUDIO", "startAudio ( %d ) OK", minBufferSize);
+        //    if (result == 0) playTest();  // use SL_SAMPLINGRATE_8
+    }
 
     return result;
 }
@@ -182,14 +200,24 @@ SLresult createBufferQueueAudioPlayer() {
     return result;
 }
 
-SLVolumeItf getVolume()
-{
-   (*bqPlayerVolume)->SetVolumeLevel(bqPlayerVolume, (SLmillibel) 0x7FFF);
-   return bqPlayerVolume;
+SLmillibel getVolume() {
+   SLmillibel volume = -1;
+   SLresult r = (*bqPlayerVolume)->GetVolumeLevel(bqPlayerVolume, &volume);
+   return volume;
 }
 
-SLAndroidSimpleBufferQueueItf* getAudioQueue()
-{
+SLresult setVolume(SLmillibel volume) {
+   if (volume > getMaxVolume()) volume = getMaxVolume();
+   return (*bqPlayerVolume)->SetVolumeLevel(bqPlayerVolume, volume);
+}
+
+SLmillibel getMaxVolume() {
+   SLmillibel max = SL_MILLIBEL_MAX;
+   (*bqPlayerVolume)->GetMaxVolumeLevel(bqPlayerVolume, &max);
+   return max;
+}
+
+SLAndroidSimpleBufferQueueItf* getAudioQueue() {
     return &bqPlayerBufferQueue;
 }
 
@@ -224,17 +252,19 @@ void shutdownAudio() {
         free(outrb->buffer);
         free(outrb);
     }
+
+    destroyThreadLock(lock);
 }
 
-circular_buffer* create_circular_buffer(int bytes){
+circular_buffer* create_circular_buffer(int size){
   circular_buffer *p;
   if ((p = calloc(1, sizeof(circular_buffer))) == NULL) {
     return NULL;
   }
-  p->size = bytes;
+  p->size = size;
   p->wp = p->rp = 0;
 
-  if ((p->buffer = calloc(bytes, sizeof(char))) == NULL) {
+  if ((p->buffer = calloc(size, sizeof(SLmillibel))) == NULL) {
     free (p);
     return NULL;
   }
@@ -255,15 +285,15 @@ int checkspace_circular_buffer(circular_buffer *p, int writeCheck){
   }
 }
 
-int read_circular_buffer_bytes(circular_buffer *p, char *out, int bytes){
+int read_circular_buffer_bytes(circular_buffer *p, SLmillibel *out, int count){
   int remaining;
   int bytesread, size = p->size;
   int i=0, rp = p->rp;
-  char *buffer = p->buffer;
+  SLmillibel *buffer = p->buffer;
   if ((remaining = checkspace_circular_buffer(p, 0)) == 0) {
     return 0;
   }
-  bytesread = bytes > remaining ? remaining : bytes;
+  bytesread = count > remaining ? remaining : count;
   for(i=0; i < bytesread; i++){
     out[i] = buffer[rp++];
     if(rp == size) rp = 0;
@@ -272,15 +302,15 @@ int read_circular_buffer_bytes(circular_buffer *p, char *out, int bytes){
   return bytesread;
 }
 
-int write_circular_buffer_bytes(circular_buffer *p, const char *in, int bytes){
+int write_circular_buffer_bytes(circular_buffer *p, const SLmillibel *in, int count){
   int remaining;
   int byteswrite, size = p->size;
   int i=0, wp = p->wp;
-  char *buffer = p->buffer;
+  SLmillibel *buffer = p->buffer;
   if ((remaining = checkspace_circular_buffer(p, 1)) == 0) {
     return 0;
   }
-  byteswrite = bytes > remaining ? remaining : bytes;
+  byteswrite = count > remaining ? remaining : count;
   for(i=0; i < byteswrite; i++){
     buffer[wp++] = in[i];
     if(wp == size) wp = 0;
@@ -288,5 +318,66 @@ int write_circular_buffer_bytes(circular_buffer *p, const char *in, int bytes){
   p->wp = wp;
   return byteswrite;
 }
+
+
+//----------------------------------------------------------------------
+// thread Locks
+// to ensure synchronisation between callbacks and processing code
+void* createThreadLock(void)
+{
+  threadLock  *p;
+  p = (threadLock*) malloc(sizeof(threadLock));
+  if (p == NULL)
+    return NULL;
+  memset(p, 0, sizeof(threadLock));
+  if (pthread_mutex_init(&(p->m), (pthread_mutexattr_t*) NULL) != 0) {
+    free((void*) p);
+    return NULL;
+  }
+  if (pthread_cond_init(&(p->c), (pthread_condattr_t*) NULL) != 0) {
+    pthread_mutex_destroy(&(p->m));
+    free((void*) p);
+    return NULL;
+  }
+  p->s = (unsigned char) 1;
+
+  return p;
+}
+
+int waitThreadLock(void *lock)
+{
+  threadLock  *p;
+  int   retval = 0;
+  p = (threadLock*) lock;
+  pthread_mutex_lock(&(p->m));
+  while (!p->s) {
+    pthread_cond_wait(&(p->c), &(p->m));
+  }
+  p->s = (unsigned char) 0;
+  pthread_mutex_unlock(&(p->m));
+}
+
+void notifyThreadLock(void *lock)
+{
+  threadLock *p;
+  p = (threadLock*) lock;
+  pthread_mutex_lock(&(p->m));
+  p->s = (unsigned char) 1;
+  pthread_cond_signal(&(p->c));
+  pthread_mutex_unlock(&(p->m));
+}
+
+void destroyThreadLock(void *lock)
+{
+  threadLock  *p;
+  p = (threadLock*) lock;
+  if (p == NULL)
+    return;
+  notifyThreadLock(p);
+  pthread_cond_destroy(&(p->c));
+  pthread_mutex_destroy(&(p->m));
+  free(p);
+}
+
 
 

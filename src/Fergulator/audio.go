@@ -55,13 +55,12 @@ func (a *Audio) Close() {
 }
 
 //export Java_com_vokal_afergulator_Engine_createAudioEngine
-func Java_com_vokal_afergulator_Engine_createAudioEngine() {
+func Java_com_vokal_afergulator_Engine_createAudioEngine(env *C.JNIEnv, clazz C.jclass, minBufferSize C.jint) {
 
-	result := C.startAudio()
+	SampleSize = int(minBufferSize)
+
+	result := C.startAudio(C.int(SampleSize))
 	if C.SL_RESULT_SUCCESS != result {
 		log.Printf("Audio Start Error: %v\n", result)
 	}
-
-	log.Printf("Audio Start: OK\n", result)
-	log.Printf("Audio Volume: %v", C.getVolume())
 }
