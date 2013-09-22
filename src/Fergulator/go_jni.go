@@ -3,7 +3,7 @@ package main
 /*
 #include <jni.h>
 #include "go_jni.h"
- */
+*/
 import "C"
 
 import (
