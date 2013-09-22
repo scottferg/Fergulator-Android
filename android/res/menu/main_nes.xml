@@ -4,11 +4,12 @@
 
     <!--<item android:id="@+id/menu_nes_restart" android:icon="@android:drawable/ic_menu_revert"
           android:title="RESET" android:showAsAction="always|withText" />-->
-    <item android:id="@+id/menu_nes_save" android:icon="@android:drawable/ic_menu_save"
-          android:title="SAVE" android:showAsAction="ifRoom|withText" />
-    <item android:id="@+id/menu_nes_load" android:icon="@android:drawable/ic_menu_directions"
-          android:title="LOAD" android:showAsAction="ifRoom|withText" />
-    <item android:id="@+id/menu_nes_shutdown" android:icon="@android:drawable/ic_lock_power_off"
-          android:title="POWER-OFF" android:showAsAction="never" />
+    <item android:id="@+id/menu_nes_save" android:icon="@drawable/av_download"
+          android:title="Save State" android:showAsAction="ifRoom|withText" />
+    <item android:id="@+id/menu_nes_load" android:icon="@drawable/av_upload"
+          android:title="Load State" android:showAsAction="ifRoom|withText" />
+    <item android:id="@+id/menu_nes_shutdown"
+        android:title="Power off" 
+        android:showAsAction="never" />
 
 </menu>

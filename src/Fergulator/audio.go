@@ -19,12 +19,23 @@ type Audio struct {
 	samples     []C.SLmillibel
 	sampleIndex int
 	mutex       sync.Mutex
+	output      chan []C.SLmillibel
 }
 
 func NewAudio() *Audio {
-	return &Audio {
+	r := Audio{
 		samples: make([]C.SLmillibel, SampleSize),
+		output:  make(chan []C.SLmillibel),
 	}
+
+	go func(c chan []C.SLmillibel) {
+		for {
+			samples := <-c
+			C.playSamples(&samples[0])
+		}
+	}(r.output)
+
+	return &r
 }
 
 func (a *Audio) AppendSample(s int16) {
@@ -32,8 +43,10 @@ func (a *Audio) AppendSample(s int16) {
 	a.sampleIndex++
 
 	if a.sampleIndex == SampleSize {
-		C.playSamples(&a.samples[0])
+		a.mutex.Lock()
+		a.output <- a.samples
 		a.sampleIndex = 0
+		a.mutex.Unlock()
 	}
 }
 
