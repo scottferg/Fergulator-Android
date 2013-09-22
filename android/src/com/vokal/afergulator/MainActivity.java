@@ -17,20 +17,20 @@ public class MainActivity extends Activity implements ActionBar.OnNavigationList
 
     private RomAdapter romAdapter;
     private GameView gameView;
+    private boolean audioEnabled = true;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_ACTION_BAR_OVERLAY);
         setContentView(R.layout.main);
+        getActionBar().setDisplayShowTitleEnabled(false);
 
         findViewById(R.id.frameLayout).setOnClickListener(toggleActionBar);
 
         romAdapter = new RomAdapter();
         getActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
         getActionBar().setListNavigationCallbacks(romAdapter, this);
-        getActionBar().setDisplayOptions(
-                getActionBar().getDisplayOptions() ^ ActionBar.DISPLAY_SHOW_TITLE);
 
         gameView = (GameView) findViewById(R.id.gameView);
     }
@@ -53,6 +53,7 @@ public class MainActivity extends Activity implements ActionBar.OnNavigationList
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main_nes, menu);
+        updateAudio(menu.findItem(R.id.menu_nes_audio));
         return true;
     }
 
@@ -65,11 +66,26 @@ public class MainActivity extends Activity implements ActionBar.OnNavigationList
             case R.id.menu_nes_save:
                 Engine.saveState();
                 return true;
+            case R.id.menu_nes_audio:
+                audioEnabled = !audioEnabled;
+                Engine.enableAudio(audioEnabled);
+                updateAudio(item);
+                return true;
             case R.id.menu_nes_shutdown:
                 Toast.makeText(this, "power down not implemented yet", Toast.LENGTH_SHORT).show();
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void updateAudio(MenuItem menuItem) {
+        if (audioEnabled) {
+            menuItem.setIcon(R.drawable.ic_action_device_access_volume_on);
+            menuItem.setTitle("Mute");
+        } else {
+            menuItem.setIcon(R.drawable.ic_action_device_access_volume_muted);
+            menuItem.setTitle("Muted");
+        }
     }
 
     private View.OnClickListener toggleActionBar = new View.OnClickListener() {
