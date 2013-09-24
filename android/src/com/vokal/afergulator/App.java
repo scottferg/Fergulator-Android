@@ -15,6 +15,8 @@ public class App extends Application {
 
     private static final int AUDIO_SAMPLE_RATE = 44100;
 
+    public static AudioTrack audioTrack;
+
     @Override
     public void onCreate() {
         super.onCreate();
