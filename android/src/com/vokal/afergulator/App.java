@@ -29,14 +29,24 @@ public class App extends Application {
         @Override
         public void run() {
             int sr = AUDIO_SAMPLE_RATE;
+
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
                 AudioManager am = (AudioManager) getSystemService(AUDIO_SERVICE);
                 sr = Integer.parseInt(am.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE));
                 String fpb = am.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER);
                 Log.i("App", String.format("JB audio props: sampleRate=%s, framesPerBuffer=%s", sr, fpb));
             }
+
             int minBuffer = AudioTrack.getMinBufferSize(sr, CHANNEL_OUT_MONO, ENCODING_PCM_16BIT);
-            Engine.createAudioEngine(minBuffer);
+
+            Engine.initAudio(minBuffer);
+
+            audioTrack = new AudioTrack(AudioManager.STREAM_SYSTEM, sr,
+                                        CHANNEL_OUT_MONO, ENCODING_PCM_16BIT,
+                                        minBuffer, AudioTrack.MODE_STREAM);
+
+            audioTrack.play();
         }
     };
+
 }
