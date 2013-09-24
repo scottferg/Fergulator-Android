@@ -46,7 +46,7 @@ public class MainActivity extends Activity implements ActionBar.OnNavigationList
     protected void onPause() {
         super.onPause();
 
-        Engine.pause();
+        Engine.pauseEmulator();
         gameView.onPause();
     }
 
@@ -148,7 +148,7 @@ public class MainActivity extends Activity implements ActionBar.OnNavigationList
     public boolean onNavigationItemSelected(int itemPosition, long itemId) {
         if (itemPosition == 0) return false;
 
-        Engine.pause();
+        Engine.pauseEmulator();
 
         String rom = romAdapter.getItem(itemPosition);
 

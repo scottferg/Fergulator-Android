@@ -8,7 +8,7 @@ public class Engine {
     public static native void resize(int w, int h);
     public static native void drawFrame();
 
-    public static native void createAudioEngine(int minBufferSize);
+    public static native void initAudio(int minBufferSize);
     public static native void setFilePath(String path);
     public static native boolean loadRom(byte[] bytes, String name);
     public static native void pauseEmulator();
@@ -20,18 +20,6 @@ public class Engine {
 	static {
 		System.loadLibrary("Fergulator");
 	}
-
-    public static void resume() {
-        pauseEmulator();
-    }
-
-    public static void pause() {
-        pauseEmulator();
-    }
-
-    public static void reset() {
-        pauseEmulator();
-    }
 
     public static void buttonDown(ButtonNES.Key key) {
         buttonDown(key, 0);
@@ -62,6 +50,10 @@ public class Engine {
                 buttonUp(key, player);
             }
         }.start();
+    }
+
+    static void playSamples(short[] samples) {
+        App.audioTrack.write(samples, 0, samples.length);
     }
 
 }
