@@ -1,7 +1,6 @@
 package com.vokal.afergulator;
 
-import android.app.ActionBar;
-import android.app.Activity;
+import android.app.*;
 import android.os.Bundle;
 import android.view.*;
 import android.widget.*;
@@ -9,21 +8,27 @@ import android.widget.*;
 import java.io.IOException;
 import java.io.InputStream;
 
-import com.vokal.afergulator.widget.ButtonNES;
+import com.google.android.gms.common.SignInButton;
+import com.vokal.afergulator.tools.Log;
+import com.vokal.afergulator.tools.Play;
 
-public class MainActivity extends Activity implements ActionBar.OnNavigationListener {
+public class MainActivity extends Play.BaseGameActivity implements ActionBar.OnNavigationListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
-    private RomAdapter romAdapter;
-    private GameView gameView;
     private boolean audioEnabled = true;
+
+    private GameView   gameView;
+    private RomAdapter romAdapter;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         requestWindowFeature(Window.FEATURE_ACTION_BAR_OVERLAY);
+
         setContentView(R.layout.main);
+
         getActionBar().setDisplayShowTitleEnabled(false);
 
         findViewById(R.id.frameLayout).setOnClickListener(toggleActionBar);
@@ -33,6 +38,28 @@ public class MainActivity extends Activity implements ActionBar.OnNavigationList
         getActionBar().setListNavigationCallbacks(romAdapter, this);
 
         gameView = (GameView) findViewById(R.id.gameView);
+
+        SignInButton googleSignIn = (SignInButton) findViewById(R.id.google_sign_in_button);
+        googleSignIn.setOnClickListener(googleSignInClicked);
+        initGameServices();
+    }
+
+    private View.OnClickListener googleSignInClicked = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            beginUserInitiatedSignIn();
+        }
+    };
+
+    @Override
+
+    public void onSignInSucceeded() {
+        Log.i(this, "Game Sign-in Succeeded");
+    }
+
+    @Override
+    public void onSignInFailed() {
+        Log.w(this, "Game Sign-in Failed!");
     }
 
     @Override
@@ -171,4 +198,5 @@ public class MainActivity extends Activity implements ActionBar.OnNavigationList
         }
         return false;
     }
+
 }
