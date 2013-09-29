@@ -1,5 +1,6 @@
 package com.vokal.afergulator;
 
+import com.vokal.afergulator.tools.Audio;
 import com.vokal.afergulator.widget.ButtonNES;
 
 public class Engine {
@@ -53,7 +54,7 @@ public class Engine {
     }
 
     static void playSamples(short[] samples) {
-        App.audioTrack.write(samples, 0, samples.length);
+        Audio.play(samples);
     }
 
 }
