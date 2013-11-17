@@ -1,4 +1,4 @@
-package com.vokal.afergulator.widget;
+package com.ferg.afergulator.widget;
 
 import android.content.Context;
 import android.graphics.Rect;

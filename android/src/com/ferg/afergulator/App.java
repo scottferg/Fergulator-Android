@@ -1,4 +1,4 @@
-package com.vokal.afergulator;
+package com.ferg.afergulator;
 
 import android.app.Application;
 import android.util.Log;
