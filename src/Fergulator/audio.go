@@ -55,8 +55,8 @@ func (a *Audio) Close() {
 	C.shutdownAudio()
 }
 
-//export Java_com_vokal_afergulator_Engine_initAudio
-func Java_com_vokal_afergulator_Engine_initAudio(env *C.JNIEnv, clazz C.jclass, minBufferSize C.jint) {
+//export Java_com_ferg_afergulator_Engine_initAudio
+func Java_com_ferg_afergulator_Engine_initAudio(env *C.JNIEnv, clazz C.jclass, minBufferSize C.jint) {
 	SampleSize = int(minBufferSize)
 	r := C.startAudio(env, clazz, C.int(SampleSize))
 	nes.AudioEnabled = r == 0
