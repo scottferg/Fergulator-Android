@@ -12,6 +12,7 @@ import "C"
 import (
 	"github.com/scottferg/Go-SDL/gfx"
 	"log"
+	"unsafe"
 )
 
 type Video struct {
@@ -35,8 +36,11 @@ func (video *Video) resize(width, height int) {
 	video.height = height
 
 	C.glViewport(C.GLint(0), C.GLint(0), C.GLsizei(width), C.GLsizei(height))
+	checkGLError()
 	C.glEnable(C.GL_TEXTURE_2D)
-    C.glDisable(C.GL_CULL_FACE)
+	checkGLError()
+	C.glDisable(C.GL_CULL_FACE)
+	checkGLError()
 }
 
 func (video *Video) drawFrame() {
@@ -58,15 +62,21 @@ func (video *Video) drawFrame() {
 	box := []float32{-1.0, -1.0, 0.0, 1.0, -1.0, 0.0, 1.0, 1.0, 0.0, -1.0, 1.0, 0.0}
 	tex := []float32{0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 0.0}
 
-	C.glDrawArrays(C.GL_TRIANGLE_FAN, 0, 4)
-
 	C.glVertexPointer(3, C.GL_FLOAT, 0, unsafe.Pointer(&box[0]))
 	C.glTexCoordPointer(2, C.GL_FLOAT, 0, unsafe.Pointer(&tex[0]))
+
+	C.glDrawArrays(C.GL_TRIANGLE_FAN, 0, 4)
 
 	C.glDisableClientState(C.GL_VERTEX_ARRAY)
 	C.glDisableClientState(C.GL_TEXTURE_COORD_ARRAY)
 
 	video.fpsmanager.FramerateDelay()
+}
+
+func checkGLError() {
+	if glErr := C.glGetError(); glErr != C.GL_NO_ERROR {
+		log.Fatalf("gl. error: %v", glErr)
+	}
 }
 
 //export Java_com_ferg_afergulator_Engine_drawFrame

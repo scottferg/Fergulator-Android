@@ -37,7 +37,7 @@ public class GameView extends GLSurfaceView implements GLSurfaceView.Renderer {
 
     private void init(Context ctx) {
         setupContextPreserve();
-        setEGLContextClientVersion(2);
+        setEGLContextClientVersion(1);
         setRenderer(this);
         setDebugFlags(DEBUG_CHECK_GL_ERROR | DEBUG_LOG_GL_CALLS);
 
