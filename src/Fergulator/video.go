@@ -8,7 +8,6 @@ package main
 import "C"
 
 import (
-	"github.com/scottferg/Fergulator/nes"
 	"github.com/scottferg/Go-SDL/gfx"
 	gl "github.com/scottferg/egles/es2"
 	"log"
@@ -106,7 +105,7 @@ func (video *Video) drawFrame() {
 	gl.ActiveTexture(gl.TEXTURE0)
 	gl.BindTexture(gl.TEXTURE_2D, video.texture)
 
-	if nes.Running && video.pixelBuffer != nil {
+	if video.pixelBuffer != nil {
 		if bmp := <-video.pixelBuffer; bmp != nil {
 			gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 240, 224, 0,
 				gl.RGBA, gl.UNSIGNED_BYTE, gl.Void(&bmp[0]))

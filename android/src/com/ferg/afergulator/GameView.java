@@ -1,4 +1,4 @@
-package com.vokal.afergulator;
+package com.ferg.afergulator;
 
 import android.content.Context;
 import android.graphics.Point;

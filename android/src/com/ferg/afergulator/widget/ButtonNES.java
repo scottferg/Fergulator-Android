@@ -1,4 +1,4 @@
-package com.vokal.afergulator.widget;
+package com.ferg.afergulator.widget;
 
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -7,8 +7,8 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 
-import com.vokal.afergulator.Engine;
-import com.vokal.afergulator.R;
+import com.ferg.afergulator.Engine;
+import com.ferg.afergulator.R;
 
 /**
  * Created by Nick on 9/13/13.

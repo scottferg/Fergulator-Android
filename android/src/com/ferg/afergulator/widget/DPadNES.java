@@ -1,4 +1,4 @@
-package com.vokal.afergulator.widget;
+package com.ferg.afergulator.widget;
 
 import android.content.Context;
 import android.graphics.PointF;
@@ -10,12 +10,12 @@ import android.widget.Button;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.vokal.afergulator.Engine;
+import com.ferg.afergulator.Engine;
 
-import static com.vokal.afergulator.widget.ButtonNES.Key.DOWN;
-import static com.vokal.afergulator.widget.ButtonNES.Key.LEFT;
-import static com.vokal.afergulator.widget.ButtonNES.Key.RIGHT;
-import static com.vokal.afergulator.widget.ButtonNES.Key.UP;
+import static com.ferg.afergulator.widget.ButtonNES.Key.DOWN;
+import static com.ferg.afergulator.widget.ButtonNES.Key.LEFT;
+import static com.ferg.afergulator.widget.ButtonNES.Key.RIGHT;
+import static com.ferg.afergulator.widget.ButtonNES.Key.UP;
 
 
 public class DPadNES extends Button {

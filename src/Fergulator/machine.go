@@ -67,7 +67,6 @@ func Java_com_vokal_afergulator_Engine_loadRom(env *C.JNIEnv, clazz C.jclass, jb
 
 	video.pixelBuffer = videoTick
 
-	nes.Running = true
 	// Main runloop, in a separate goroutine so that
 	// the video rendering can happen on this one
 	go nes.RunSystem()
@@ -82,8 +81,6 @@ func Java_com_vokal_afergulator_Engine_pauseEmulator(env *C.JNIEnv, clazz C.jcla
 			log.Printf("panic: init: %v\n", err)
 		}
 	}()
-
-	nes.Running = false
 }
 
 //export Java_com_vokal_afergulator_Engine_saveState

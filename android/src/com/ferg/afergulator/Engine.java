@@ -1,6 +1,6 @@
-package com.vokal.afergulator;
+package com.ferg.afergulator;
 
-import com.vokal.afergulator.widget.ButtonNES;
+import com.ferg.afergulator.widget.ButtonNES;
 
 public class Engine {
 

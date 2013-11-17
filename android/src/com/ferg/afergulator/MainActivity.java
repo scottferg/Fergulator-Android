@@ -1,4 +1,4 @@
-package com.vokal.afergulator;
+package com.ferg.afergulator;
 
 import android.app.ActionBar;
 import android.app.Activity;
@@ -9,7 +9,7 @@ import android.widget.*;
 import java.io.IOException;
 import java.io.InputStream;
 
-import com.vokal.afergulator.widget.ButtonNES;
+import com.ferg.afergulator.widget.ButtonNES;
 
 public class MainActivity extends Activity implements ActionBar.OnNavigationListener {
 
