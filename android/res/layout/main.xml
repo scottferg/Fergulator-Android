@@ -9,11 +9,6 @@
         android:background="@android:color/black"
         >
 
-    <com.google.android.gms.common.SignInButton
-            android:id="@+id/google_sign_in_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
     <com.vokal.afergulator.GameView
             android:id="@+id/gameView"
             android:layout_width="wrap_content"
@@ -90,6 +85,14 @@
             custom:button="START"
             android:textColor="@android:color/white"
             />
+
+    <ProgressBar android:id="@+id/progress_spinner"
+                 android:layout_width="match_parent"
+                 android:layout_height="match_parent"
+                 android:background="#77000000"
+                 android:padding="96dp"
+                 android:visibility="gone"
+                 />
 
 
 </RelativeLayout>

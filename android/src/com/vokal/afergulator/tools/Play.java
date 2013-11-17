@@ -5,22 +5,23 @@ import android.content.*;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
 import android.content.res.Resources;
-import android.os.Bundle;
-import android.os.StrictMode;
+import android.os.*;
 import android.support.v4.app.FragmentActivity;
-import android.view.Gravity;
+import android.view.*;
+import android.widget.TextView;
 
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Vector;
+import java.util.*;
 
 import com.google.android.gms.appstate.AppStateClient;
 import com.google.android.gms.common.*;
 import com.google.android.gms.common.annotation.KeepName;
 import com.google.android.gms.games.GamesActivityResultCodes;
 import com.google.android.gms.games.GamesClient;
-import com.google.android.gms.games.multiplayer.Invitation;
+import com.google.android.gms.games.multiplayer.*;
+import com.google.android.gms.games.multiplayer.realtime.*;
 import com.google.android.gms.plus.PlusClient;
 import com.vokal.afergulator.R;
 
@@ -1360,7 +1361,19 @@ public class Play implements GooglePlayServicesClient.ConnectionCallbacks, Googl
             return mHelper.getSignInError();
         }
 
-    }
+        // Sets the flag to keep this screen on. It's recommended to do that during
+        // the
+        // handshake when setting up a game, because if the screen turns off, the
+        // game will be
+        // cancelled.
+        protected void keepScreenOn() {
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        }
 
+        // Clears the flag that keeps the screen on.
+        protected void stopKeepingScreenOn() {
+            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        }
+    }
 
 }
