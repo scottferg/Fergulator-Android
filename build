@@ -20,7 +20,7 @@ if [ "$?" -eq 0 ]; then
     ant -f android/build.xml clean debug install
     if [ "$?" -eq 0 ]; then
         echo "ANDROID BUILD OK."
-        adb shell am start -n "com.vokal.afergulator/com.vokal.afergulator.MainActivity" \
+        adb shell am start -n "com.ferg.afergulator/com.ferg.afergulator.MainActivity" \
             -a android.intent.action.MAIN -c android.intent.category.LAUNCHER
     else
         cat android/.build_log

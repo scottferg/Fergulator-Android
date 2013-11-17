@@ -54,8 +54,8 @@ func (a *Audio) Close() {
 	C.shutdownAudio()
 }
 
-//export Java_com_vokal_afergulator_Engine_createAudioEngine
-func Java_com_vokal_afergulator_Engine_createAudioEngine() {
+//export Java_com_ferg_afergulator_Engine_createAudioEngine
+func Java_com_ferg_afergulator_Engine_createAudioEngine() {
 
 	result := C.startAudio()
 	if C.SL_RESULT_SUCCESS != result {

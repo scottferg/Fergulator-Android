@@ -39,9 +39,9 @@ public class GameView extends GLSurfaceView implements GLSurfaceView.Renderer {
         setupContextPreserve();
         setEGLContextClientVersion(2);
         setRenderer(this);
-        setDebugFlags(DEBUG_CHECK_GL_ERROR | DEBUG_CHECK_GL_ERROR);
+        setDebugFlags(DEBUG_CHECK_GL_ERROR | DEBUG_LOG_GL_CALLS);
+
         if (!isInEditMode()) {
-//            Engine.setFilePath(ctx.getExternalCacheDir().getAbsolutePath());
             Engine.setFilePath(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath());
         }
     }
