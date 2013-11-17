@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-      package="com.vokal.afergulator"
+      package="com.ferg.afergulator"
       android:versionCode="1"
       android:versionName="1.0">
 
@@ -12,7 +12,7 @@
     <uses-permission android:name="android.permission.INTERNET"/>
 
     <application
-            android:name=".App"
+            android:name="com.ferg.afergulator.App"
             android:icon="@drawable/ic_launcher"
             android:label="@string/app_name">
 
@@ -21,7 +21,7 @@
         <meta-data android:name="com.google.android.gms.games.APP_ID"
                    android:value="@string/play_services_app_id" />
 
-        <activity android:name=".MainActivity"
+        <activity android:name="com.ferg.afergulator.MainActivity"
                   android:clearTaskOnLaunch="true"
 				  android:theme="@android:style/Theme.Holo.Light.DarkActionBar"
                   android:screenOrientation="sensorLandscape"
