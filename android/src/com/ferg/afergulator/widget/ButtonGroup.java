@@ -5,7 +5,6 @@ import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.view.*;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -2,12 +2,14 @@ pkg/
 bin/
 gen/
 out/
+build/
 
 *.so
 
 local.properties
 .build_log
 .idea/
+.gradle/
 .DS_Store
-
+*.iml
 

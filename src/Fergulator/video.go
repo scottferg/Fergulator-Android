@@ -191,8 +191,8 @@ func checkGLError() {
 	}
 }
 
-//export Java_com_vokal_afergulator_Engine_drawFrame
-func Java_com_vokal_afergulator_Engine_drawFrame(env *C.JNIEnv, clazz C.jclass) {
+//export Java_com_ferg_afergulator_Engine_drawFrame
+func Java_com_ferg_afergulator_Engine_drawFrame(env *C.JNIEnv, clazz C.jclass) {
 	defer func() {
 		if err := recover(); err != nil {
 			log.Fatalf("panic: drawFrame: %v\n", err)
@@ -201,8 +201,8 @@ func Java_com_vokal_afergulator_Engine_drawFrame(env *C.JNIEnv, clazz C.jclass) 
 	video.drawFrame()
 }
 
-//export Java_com_vokal_afergulator_Engine_init
-func Java_com_vokal_afergulator_Engine_init(env *C.JNIEnv, clazz C.jclass) {
+//export Java_com_ferg_afergulator_Engine_init
+func Java_com_ferg_afergulator_Engine_init(env *C.JNIEnv, clazz C.jclass) {
 	defer func() {
 		if err := recover(); err != nil {
 			log.Fatalf("panic: init: %v\n", err)
@@ -211,8 +211,8 @@ func Java_com_vokal_afergulator_Engine_init(env *C.JNIEnv, clazz C.jclass) {
 	video.initGL()
 }
 
-//export Java_com_vokal_afergulator_Engine_resize
-func Java_com_vokal_afergulator_Engine_resize(env *C.JNIEnv, clazz C.jclass, width, height C.jint) {
+//export Java_com_ferg_afergulator_Engine_resize
+func Java_com_ferg_afergulator_Engine_resize(env *C.JNIEnv, clazz C.jclass, width, height C.jint) {
 	defer func() {
 		if err := recover(); err != nil {
 			log.Fatalf("panic: resize: %v\n", err)

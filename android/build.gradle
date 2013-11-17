@@ -1,0 +1,62 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:0.6.+'
+    }
+}
+apply plugin: 'android'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'com.android.support:support-v4:18.0.0'
+    compile 'com.google.android.gms:play-services:3.2.65'
+
+    compile 'com.google.guava:guava:15.0'
+
+    compile files('libs/native-libs.jar')
+//    compile fileTree(dir: 'libs', include: '*.jar')
+
+}
+
+android {
+    compileSdkVersion 18
+    buildToolsVersion "18.0.1"
+
+    defaultConfig {
+        minSdkVersion 11
+        targetSdkVersion 18
+    }
+    sourceSets {
+        main {
+            manifest.srcFile 'AndroidManifest.xml'
+            java.srcDirs = ['src']
+            resources.srcDirs = ['src']
+            aidl.srcDirs = ['src']
+            renderscript.srcDirs = ['src']
+            res.srcDirs = ['res']
+            assets.srcDirs = ['assets']
+        }
+    }
+}
+
+task nativeLibsToJar(
+        type: Zip,
+        description: 'create a jar archive of the native libs') {
+        destinationDir file('./libs')
+        baseName 'native-libs'
+        extension 'jar'
+        from 'libs/armeabi-v7a'
+        include '**/*.so'
+        into 'lib/armeabi-v7a'
+}
+
+tasks.withType(Compile) {
+    compileTask -> compileTask.dependsOn(nativeLibsToJar)
+}
+
+clean.dependsOn 'cleanNativeLibsToJar'

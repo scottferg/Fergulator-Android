@@ -3,6 +3,7 @@
 set -e
 
 if [ -e bin/linux_arm/Fergulator ]; then rm bin/linux_arm/Fergulator; fi
+if [ -e pkg ]; then rm -R pkg; fi
 
 CC="$NDK_ROOT/bin/arm-linux-androideabi-gcc"
 CC=$CC GOPATH="`pwd`:$GOPATH" GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=1 $GOROOT/bin/go install \
@@ -13,14 +14,14 @@ if [ "$?" -eq 0 ]; then
     echo "GO BUILD OK."
 
     mkdir -p android/libs/armeabi-v7a
-
     cp bin/linux_arm/Fergulator android/libs/armeabi-v7a/libFergulator.so
-
     if [ -e android/assets/roms/.DS_Store ]; then rm android/assets/roms/.DS_Store; fi
-    ant -f android/build.xml clean debug install
+
+    gradlew clean installDebug
+
     if [ "$?" -eq 0 ]; then
         echo "ANDROID BUILD OK."
-        adb shell am start -n "com.vokal.afergulator/com.vokal.afergulator.MainActivity" \
+        adb shell am start -n "com.ferg.afergulator/com.ferg.afergulator.MainActivity" \
             -a android.intent.action.MAIN -c android.intent.category.LAUNCHER
     else
         cat android/.build_log
