@@ -9,14 +9,14 @@
         android:background="@android:color/black"
         >
 
-    <com.vokal.afergulator.GameView
+    <com.ferg.afergulator.GameView
             android:id="@+id/gameView"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_centerHorizontal="true"
             />
 
-    <com.vokal.afergulator.widget.DPadNES
+    <com.ferg.afergulator.widget.DPadNES
             android:id="@+id/buttonDPad"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -28,7 +28,7 @@
             />
 
 
-    <com.vokal.afergulator.widget.ButtonGroup
+    <com.ferg.afergulator.widget.ButtonGroup
             android:id="@+id/button_grp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -39,7 +39,7 @@
             android:clickable="true"
             >
 
-        <com.vokal.afergulator.widget.ButtonNES
+        <com.ferg.afergulator.widget.ButtonNES
                 android:id="@+id/buttonB"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -49,7 +49,7 @@
                 custom:button="B"
                 />
 
-        <com.vokal.afergulator.widget.ButtonNES
+        <com.ferg.afergulator.widget.ButtonNES
                 android:id="@+id/buttonA"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -59,9 +59,9 @@
                 custom:button="A"
                 />
 
-    </com.vokal.afergulator.widget.ButtonGroup>
+    </com.ferg.afergulator.widget.ButtonGroup>
 
-    <com.vokal.afergulator.widget.ButtonNES
+    <com.ferg.afergulator.widget.ButtonNES
             android:id="@+id/buttonSelect"
             android:layout_width="wrap_content"
             android:layout_height="96dp"
@@ -73,7 +73,7 @@
             android:textColor="@android:color/white"
             />
 
-    <com.vokal.afergulator.widget.ButtonNES
+    <com.ferg.afergulator.widget.ButtonNES
             android:id="@+id/buttonStart"
             android:layout_width="wrap_content"
             android:layout_height="96dp"

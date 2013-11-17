@@ -18,14 +18,14 @@
             android:background="@android:color/transparent"
             android:clickable="true"
             >
-        <com.vokal.afergulator.widget.DPadNES
+        <com.ferg.afergulator.widget.DPadNES
                 android:layout_width="160dp"
                 android:layout_height="148dp"
                 android:background="@drawable/dpad_bg"
                 />
     </FrameLayout>
 
-    <com.vokal.afergulator.widget.ButtonGroup
+    <com.ferg.afergulator.widget.ButtonGroup
             android:id="@+id/button_grp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -38,7 +38,7 @@
             android:clickable="true"
             >
 
-        <com.vokal.afergulator.widget.ButtonNES
+        <com.ferg.afergulator.widget.ButtonNES
                 android:id="@+id/buttonB"
                 android:layout_width="64dp"
                 android:layout_height="64dp"
@@ -46,7 +46,7 @@
                 custom:button="B"
                 />
 
-        <com.vokal.afergulator.widget.ButtonNES
+        <com.ferg.afergulator.widget.ButtonNES
                 android:id="@+id/buttonA"
                 android:layout_width="64dp"
                 android:layout_height="64dp"
@@ -56,6 +56,6 @@
                 custom:button="A"
                 />
 
-    </com.vokal.afergulator.widget.ButtonGroup>
+    </com.ferg.afergulator.widget.ButtonGroup>
 
 </RelativeLayout>
