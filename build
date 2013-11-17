@@ -23,7 +23,8 @@ if [ "$?" -eq 0 ]; then
     #cp bin/linux_arm/Fergulator android/obj/local/armeabi-v7a/libFergulator.so
 
     if [ -e android/assets/roms/.DS_Store ]; then rm android/assets/roms/.DS_Store; fi
-    ant -f android/build.xml clean debug install #> android/.build_log
+    #ant -f android/build.xml clean debug install #> android/.build_log
+    gradlew clean installDebug
     if [ "$?" -eq 0 ]; then
         echo "ANDROID BUILD OK."
         adb shell am start -n "com.vokal.afergulator/com.vokal.afergulator.MainActivity" \
