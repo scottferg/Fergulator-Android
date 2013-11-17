@@ -6,7 +6,6 @@ import android.opengl.GLSurfaceView;
 import android.os.Build;
 import android.os.Environment;
 import android.util.AttributeSet;
-import android.util.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,7 +13,9 @@ import java.util.Arrays;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-import org.apache.commons.io.IOUtils;
+import com.google.common.io.ByteStreams;
+
+import com.ferg.afergulator.tools.Log;
 
 /**
  * Created by Nick on 9/6/13.
@@ -38,8 +39,10 @@ public class GameView extends GLSurfaceView implements GLSurfaceView.Renderer {
     private void init(Context ctx) {
         setupContextPreserve();
         setEGLContextClientVersion(2);
-        setRenderer(this);
         setDebugFlags(DEBUG_CHECK_GL_ERROR | DEBUG_CHECK_GL_ERROR);
+
+        setRenderer(this);
+
         if (!isInEditMode()) {
 //            Engine.setFilePath(ctx.getExternalCacheDir().getAbsolutePath());
             Engine.setFilePath(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath());
@@ -47,11 +50,11 @@ public class GameView extends GLSurfaceView implements GLSurfaceView.Renderer {
     }
 
     public boolean loadGame(InputStream is, String name) throws IOException {
-        byte[] rom = IOUtils.toByteArray(is);
+        byte[] rom = ByteStreams.toByteArray(is);
         byte[] start = Arrays.copyOfRange(rom, 0, 3);
-        Log.d("GameView", String.format("%s ROM: %s (%dk)", new String(start), name, rom.length / 1024));
+        Log.d("GameView", "%s ROM: %s (%dk)", new String(start), name, rom.length / 1024);
         boolean result = Engine.loadRom(rom, name);
-        Log.d(TAG, String.format("%s, loaded = %B", name, result));
+        Log.d(TAG, "%s, loaded = %B", name, result);
         return result;
     }
 
