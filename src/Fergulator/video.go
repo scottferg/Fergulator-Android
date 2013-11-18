@@ -48,10 +48,6 @@ const fragShaderSrcDef = `
 `
 
 func (video *Video) initGL() {
-	log.Printf("GL_VERSION: %v GL_RENDERER: %v GL_VENDOR %v\n",
-		gl.GetString(gl.VERSION), gl.GetString(gl.RENDERER), gl.GetString(gl.VENDOR))
-	log.Printf("GL_EXTENSIONS: %v\n", gl.GetString(gl.EXTENSIONS))
-
 	video.fpsmanager = gfx.NewFramerate()
 	video.fpsmanager.SetFramerate(60)
 
@@ -107,8 +103,12 @@ func (video *Video) drawFrame() {
 
 	if video.pixelBuffer != nil {
 		if bmp := <-video.pixelBuffer; bmp != nil {
-			gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 240, 224, 0,
-				gl.RGBA, gl.UNSIGNED_BYTE, gl.Void(&bmp[0]))
+			buf := make([]uint32, 256*256)
+			for i, v := range bmp {
+				buf[i] = v
+			}
+			gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 256, 256, 0,
+				gl.RGBA, gl.UNSIGNED_BYTE, gl.Void(&buf[0]))
 		}
 	} else {
 		gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 240, 224, 0,
