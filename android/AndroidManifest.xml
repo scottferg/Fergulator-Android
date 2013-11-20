@@ -19,9 +19,6 @@
 
 		<uses-feature android:glEsVersion="0x00020000" android:required="true"/>
 
-        <meta-data android:name="com.google.android.gms.games.APP_ID"
-                   android:value="@string/play_services_app_id" />
-
         <activity android:name="com.ferg.afergulator.MainActivity"
                   android:clearTaskOnLaunch="true"
 				  android:theme="@android:style/Theme.Holo.Light.DarkActionBar"

@@ -17,7 +17,7 @@ if [ "$?" -eq 0 ]; then
     cp bin/linux_arm/Fergulator android/libs/armeabi-v7a/libFergulator.so
     if [ -e android/assets/roms/.DS_Store ]; then rm android/assets/roms/.DS_Store; fi
 
-    ./gradlew clean installDebug
+    ./gradlew installDebug
 
     if [ "$?" -eq 0 ]; then
         echo "ANDROID BUILD OK."
