@@ -53,7 +53,6 @@ const fragShaderSrcDef = `
 func (video *Video) initGL() {
 	video.fpsmanager = gfx.NewFramerate()
 	video.fpsmanager.SetFramerate(60)
-	video.buf = make([]uint32, 256*256)
 
 	gl.ClearColor(0.0, 0.0, 0.0, 1.0)
 	gl.Enable(gl.CULL_FACE)
@@ -99,29 +98,17 @@ func (video *Video) resize(width, height int) {
 	gl.Viewport(0, 0, width, height)
 }
 
-func (video *Video) pullFrames() {
-	for {
-		bmp := <-video.pixelBuffer
-		video.mutex.Lock()
-		for i, v := range bmp {
-			r := i / 240
-			c := i % 240
-			video.buf[r*256+c] = v
-		}
-		video.mutex.Unlock()
-	}
-}
-
 func (video *Video) drawFrame() {
 	gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 	gl.UseProgram(video.prog)
 	gl.ActiveTexture(gl.TEXTURE0)
 	gl.BindTexture(gl.TEXTURE_2D, video.texture)
 
-	video.mutex.Lock()
-	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 256, 256, 0,
-		gl.RGBA, gl.UNSIGNED_BYTE, gl.Void(&video.buf[0]))
-	video.mutex.Unlock()
+	if video.pixelBuffer != nil {
+		video.buf = <-video.pixelBuffer
+		gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 256, 256, 0,
+			gl.RGBA, gl.UNSIGNED_BYTE, gl.Void(&video.buf[0]))
+	}
 
 	gl.DrawArrays(gl.TRIANGLES, 0, 6)
 }

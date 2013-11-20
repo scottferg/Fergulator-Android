@@ -9,9 +9,9 @@ import "C"
 
 import (
 	"C"
+	"github.com/scottferg/Fergulator/nes"
 	"log"
 	"sync"
-	"github.com/scottferg/Fergulator/nes"
 )
 
 var SampleSize = 2048
