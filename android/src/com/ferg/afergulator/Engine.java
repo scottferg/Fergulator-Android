@@ -12,6 +12,8 @@ public class Engine {
     public static native void init();
     public static native void resize(int w, int h);
     public static native void drawFrame();
+    public static native void startProfile();
+    public static native void stopProfile();
 
     public static native void initAudio(int minBufferSize);
     public static native void setFilePath(String path);

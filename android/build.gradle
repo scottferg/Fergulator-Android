@@ -18,8 +18,7 @@ dependencies {
 
     compile 'com.google.guava:guava:15.0'
 
-    compile files('libs/native-libs.jar')
-//    compile fileTree(dir: 'libs', include: '*.jar')
+    compile fileTree(dir: 'libs', include: '*.jar')
 
 }
 

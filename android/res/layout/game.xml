@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:custom="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/frameLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/black"
+        >
+
+    <com.ferg.afergulator.GameView
+            android:id="@+id/gameView"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_centerHorizontal="true"
+            />
+
+    <com.ferg.afergulator.widget.DPadNES
+            android:id="@+id/buttonDPad"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentLeft="true"
+            android:layout_toLeftOf="@id/gameView"
+            android:layout_marginTop="48dp"
+            android:visibility="invisible"
+            android:background="@drawable/dpad_bg"
+            />
+
+
+    <com.ferg.afergulator.widget.ButtonGroup
+            android:id="@+id/button_grp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true"
+            android:layout_toRightOf="@id/gameView"
+            android:visibility="invisible"
+            android:paddingTop="48dp"
+            android:clickable="true"
+            >
+
+        <com.ferg.afergulator.widget.ButtonNES
+                android:id="@+id/buttonB"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_margin="4dp"
+                android:background="@drawable/nes_button"
+                custom:button="B"
+                />
+
+        <com.ferg.afergulator.widget.ButtonNES
+                android:id="@+id/buttonA"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_margin="4dp"
+                android:background="@drawable/nes_button"
+                custom:button="A"
+                />
+
+    </com.ferg.afergulator.widget.ButtonGroup>
+
+    <com.ferg.afergulator.widget.ButtonNES
+            android:id="@+id/buttonSelect"
+            android:layout_width="wrap_content"
+            android:layout_height="96dp"
+            android:layout_toLeftOf="@id/gameView"
+            android:layout_above="@id/buttonDPad"
+            style="@android:style/Widget.Holo.Light.Button"
+            android:text="SELECT"
+            custom:button="SELECT"
+            android:visibility="invisible"
+            android:textColor="@android:color/white"
+            />
+
+    <com.ferg.afergulator.widget.ButtonNES
+            android:id="@+id/buttonStart"
+            android:layout_width="wrap_content"
+            android:layout_height="96dp"
+            android:layout_toRightOf="@id/gameView"
+            android:layout_alignBottom="@id/buttonSelect"
+            android:layout_alignParentRight="true"
+            style="@android:style/Widget.Holo.Light.Button"
+            android:text="START"
+            custom:button="START"
+            android:visibility="invisible"
+            android:textColor="@android:color/white"
+            />
+
+</RelativeLayout>

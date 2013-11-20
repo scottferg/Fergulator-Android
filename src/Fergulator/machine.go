@@ -9,7 +9,9 @@ import (
 	"fmt"
 	"github.com/scottferg/Fergulator/nes"
 	"log"
+	"os"
 	"runtime"
+	"runtime/pprof"
 	"unsafe"
 )
 
@@ -53,6 +55,8 @@ func Java_com_ferg_afergulator_Engine_loadRom(env *C.JNIEnv, clazz C.jclass, jby
 	if len(cachePath) > 0 {
 		nes.SaveStateFile = fmt.Sprintf("%s/%s.save", cachePath, nes.GameName)
 		nes.BatteryRamFile = fmt.Sprintf("%s/%s.save", cachePath, nes.GameName)
+
+		log.Printf("cache path: %s", cachePath)
 	}
 
 	log.Printf("%v ROM: %v (%v kb)\n", string(rom[:3]), nes.GameName, len(rom)/1024)
@@ -71,6 +75,7 @@ func Java_com_ferg_afergulator_Engine_loadRom(env *C.JNIEnv, clazz C.jclass, jby
 	// Main runloop, in a separate goroutine so that
 	// the video rendering can happen on this one
 	go nes.RunSystem()
+    go video.pullFrames()
 
 	return C.JNI_TRUE
 }
@@ -136,4 +141,32 @@ func GetKey(ev interface{}) int {
 	}
 
 	return -1
+}
+
+//export Java_com_ferg_afergulator_Engine_startProfile
+func Java_com_ferg_afergulator_Engine_startProfile(env *C.JNIEnv, clazz C.jclass) {
+	defer func() {
+		if err := recover(); err != nil {
+			log.Printf("panic: init: %v\n", err)
+		}
+	}()
+
+	f, err := os.Create(fmt.Sprintf("%s/profile.prof", cachePath))
+	if err != nil {
+		log.Println(err.Error())
+	}
+	pprof.StartCPUProfile(f)
+	log.Println("Profile started")
+}
+
+//export Java_com_ferg_afergulator_Engine_stopProfile
+func Java_com_ferg_afergulator_Engine_stopProfile(env *C.JNIEnv, clazz C.jclass) {
+	defer func() {
+		if err := recover(); err != nil {
+			log.Printf("panic: init: %v\n", err)
+		}
+	}()
+
+	pprof.StopCPUProfile()
+	log.Println("Profile stopped")
 }

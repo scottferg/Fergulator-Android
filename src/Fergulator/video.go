@@ -11,6 +11,7 @@ import (
 	"github.com/scottferg/Go-SDL/gfx"
 	gl "github.com/scottferg/egles/es2"
 	"log"
+	"sync"
 )
 
 type Video struct {
@@ -21,6 +22,8 @@ type Video struct {
 	textureUni    int
 	pixelBuffer   chan []uint32
 	blank         [240 * 224]uint32
+	buf           []uint32
+	mutex         sync.Mutex
 }
 
 var video Video
@@ -31,7 +34,7 @@ const vertShaderSrcDef = `
 	varying vec2 texCoord;
 
 	void main() {
-		texCoord = vec2(vTexCoord.x, -vTexCoord.y);
+        texCoord = vec2(vTexCoord.x * .9375, -(vTexCoord.y * .875) - .125);
 		gl_Position = vec4((vPosition.xy * 2.0) - 1.0, vPosition.zw);
 	}
 `
@@ -50,6 +53,7 @@ const fragShaderSrcDef = `
 func (video *Video) initGL() {
 	video.fpsmanager = gfx.NewFramerate()
 	video.fpsmanager.SetFramerate(60)
+	video.buf = make([]uint32, 256*256)
 
 	gl.ClearColor(0.0, 0.0, 0.0, 1.0)
 	gl.Enable(gl.CULL_FACE)
@@ -95,28 +99,31 @@ func (video *Video) resize(width, height int) {
 	gl.Viewport(0, 0, width, height)
 }
 
+func (video *Video) pullFrames() {
+	for {
+		bmp := <-video.pixelBuffer
+		video.mutex.Lock()
+		for i, v := range bmp {
+			r := i / 240
+			c := i % 240
+			video.buf[r*256+c] = v
+		}
+		video.mutex.Unlock()
+	}
+}
+
 func (video *Video) drawFrame() {
 	gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 	gl.UseProgram(video.prog)
 	gl.ActiveTexture(gl.TEXTURE0)
 	gl.BindTexture(gl.TEXTURE_2D, video.texture)
 
-	if video.pixelBuffer != nil {
-		if bmp := <-video.pixelBuffer; bmp != nil {
-			buf := make([]uint32, 256*256)
-			for i, v := range bmp {
-				buf[i] = v
-			}
-			gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 256, 256, 0,
-				gl.RGBA, gl.UNSIGNED_BYTE, gl.Void(&buf[0]))
-		}
-	} else {
-		gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 240, 224, 0,
-			gl.RGBA, gl.UNSIGNED_BYTE, gl.Void(&video.blank[0]))
-	}
+	video.mutex.Lock()
+	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 256, 256, 0,
+		gl.RGBA, gl.UNSIGNED_BYTE, gl.Void(&video.buf[0]))
+	video.mutex.Unlock()
 
 	gl.DrawArrays(gl.TRIANGLES, 0, 6)
-	video.fpsmanager.FramerateDelay()
 }
 
 func createProgram(vertShaderSrc string, fragShaderSrc string) uint {
