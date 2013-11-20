@@ -111,6 +111,7 @@ func (video *Video) drawFrame() {
 	}
 
 	gl.DrawArrays(gl.TRIANGLES, 0, 6)
+	video.fpsmanager.FramerateDelay()
 }
 
 func createProgram(vertShaderSrc string, fragShaderSrc string) uint {
