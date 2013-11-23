@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 
@@ -80,6 +81,30 @@ public class ButtonNES extends Button implements View.OnTouchListener {
         int h = resolveSize(0, heightMeasureSpec);
         if (h == 0) h = w;
         setMeasuredDimension(w, h);
+    }
+
+    public static Key keyFromKeyCode(int keyCode) {
+        android.util.Log.i(TAG, "Code: " + Integer.toString(keyCode));
+        switch (keyCode) {
+            case KeyEvent.KEYCODE_DPAD_LEFT:
+                return Key.LEFT;
+            case KeyEvent.KEYCODE_DPAD_RIGHT:
+                return Key.RIGHT;
+            case KeyEvent.KEYCODE_DPAD_UP:
+                return Key.UP;
+            case KeyEvent.KEYCODE_DPAD_DOWN:
+                return Key.DOWN;
+            case 108:
+                return Key.START;
+            case 4:
+                return Key.SELECT;
+            case 96:
+                return Key.B;
+            case 97:
+                return Key.A;
+            default:
+                return null;
+        }
     }
 
     @Override

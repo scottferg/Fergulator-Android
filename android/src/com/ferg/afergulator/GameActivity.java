@@ -18,6 +18,9 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.ferg.afergulator.widget.ButtonNES;
+import com.ferg.afergulator.widget.ButtonNES.Key;
+
 public class GameActivity extends Activity {
     private static final String TAG = GameActivity.class.getSimpleName();
 
@@ -34,7 +37,7 @@ public class GameActivity extends Activity {
 
         final PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
 
-        mWakeLock = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, "Fergulator");
+        mWakeLock = pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK, "Fergulator");
         mWakeLock.acquire();
 
         mGameView = (GameView) findViewById(R.id.gameView);
@@ -82,4 +85,26 @@ public class GameActivity extends Activity {
         mWakeLock.release();
         super.onDestroy();
     }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        Key nesKey = ButtonNES.keyFromKeyCode(keyCode);
+        if (nesKey != null) {
+            Engine.buttonDown(nesKey);
+            return true;
+        }
+
+        return false;
+    }
+     
+     @Override
+     public boolean onKeyUp(int keyCode, KeyEvent event) {
+         Key nesKey = ButtonNES.keyFromKeyCode(keyCode);
+         if (nesKey != null) {
+             Engine.buttonUp(nesKey);
+             return true;
+         }
+
+         return false;
+     }
 }
