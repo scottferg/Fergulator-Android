@@ -8,6 +8,7 @@ package main
 import "C"
 
 import (
+	"github.com/scottferg/Fergulator/nes"
 	"github.com/scottferg/Go-SDL/gfx"
 	gl "github.com/scottferg/egles/es2"
 	"log"
@@ -43,6 +44,7 @@ const fragShaderSrcDef = `
 	precision mediump float;
 	varying vec2 texCoord;
 	uniform sampler2D texture;
+	uniform int palette[64];
 
 	void main() {
 		vec4 c = texture2D(texture, texCoord);
@@ -61,6 +63,7 @@ func (video *Video) initGL() {
 	video.prog = createProgram(vertShaderSrcDef, fragShaderSrcDef)
 	posAttrib := attribLocation(video.prog, "vPosition")
 	texCoordAttr := attribLocation(video.prog, "vTexCoord")
+	paletteLoc := uniformLocation(video.prog, "palette")
 	video.textureUni = uniformLocation(video.prog, "texture")
 
 	video.texture = GenTexture()
@@ -73,6 +76,8 @@ func (video *Video) initGL() {
 	gl.UseProgram(video.prog)
 	gl.EnableVertexAttribArray(posAttrib)
 	gl.EnableVertexAttribArray(texCoordAttr)
+
+	gl.Uniform1iv(paletteLoc, len(nes.ShaderPalette), []int32(nes.ShaderPalette))
 
 	vertVBO := GenBuffer()
 	checkGLError()
