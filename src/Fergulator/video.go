@@ -21,9 +21,7 @@ type Video struct {
 	fpsmanager    *gfx.FPSmanager
 	width, height int
 	textureUni    int
-	pixelBuffer   chan []uint32
-	blank         [240 * 224]uint32
-	buf           []uint32
+	pixelBuffer   chan []int16
 	mutex         sync.Mutex
 }
 
@@ -35,7 +33,7 @@ const vertShaderSrcDef = `
 	varying vec2 texCoord;
 
 	void main() {
-        texCoord = vec2(vTexCoord.x * .9375, -(vTexCoord.y * .875) - .125);
+        texCoord = vec2(vTexCoord.x * .9375 +.03125, -(vTexCoord.y * .875) -.09375);
 		gl_Position = vec4((vPosition.xy * 2.0) - 1.0, vPosition.zw);
 	}
 `
@@ -44,11 +42,16 @@ const fragShaderSrcDef = `
 	precision mediump float;
 	varying vec2 texCoord;
 	uniform sampler2D texture;
-	uniform int palette[64];
+	uniform ivec3 palette[64];
 
 	void main() {
-		vec4 c = texture2D(texture, texCoord);
-		gl_FragColor = vec4(c.a, c.b, c.g, 1.0);
+		vec4 t = texture2D(texture, texCoord);
+		int i = int(t.a * 256.0);
+		i = i - ((i / 64) * 64);
+
+		vec3 color = vec3(palette[i]) / 256.0;
+
+        gl_FragColor = vec4(color, 1);
 	}
 `
 
@@ -77,7 +80,7 @@ func (video *Video) initGL() {
 	gl.EnableVertexAttribArray(posAttrib)
 	gl.EnableVertexAttribArray(texCoordAttr)
 
-	gl.Uniform1iv(paletteLoc, len(nes.ShaderPalette), []int32(nes.ShaderPalette))
+	gl.Uniform3iv(paletteLoc, 64, nes.ShaderPalette)
 
 	vertVBO := GenBuffer()
 	checkGLError()
@@ -110,9 +113,8 @@ func (video *Video) drawFrame() {
 	gl.BindTexture(gl.TEXTURE_2D, video.texture)
 
 	if video.pixelBuffer != nil {
-		video.buf = <-video.pixelBuffer
 		gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 256, 256, 0,
-			gl.RGBA, gl.UNSIGNED_BYTE, gl.Void(&video.buf[0]))
+			gl.RGBA, gl.UNSIGNED_SHORT_4_4_4_4, gl.Void(&(<-video.pixelBuffer)[0]))
 	}
 
 	gl.DrawArrays(gl.TRIANGLES, 0, 6)
