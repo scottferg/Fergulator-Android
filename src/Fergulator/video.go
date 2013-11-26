@@ -46,12 +46,12 @@ const fragShaderSrcDef = `
 
 	void main() {
 		vec4 t = texture2D(texture, texCoord);
-		int i = int(t.a * 256.0);
+		int i = int(t.b * 15.0) * 16 + int(t.a * 15.0);
 		i = i - ((i / 64) * 64);
 
 		vec3 color = vec3(palette[i]) / 256.0;
 
-        gl_FragColor = vec4(color, 1);
+		gl_FragColor = vec4(color, 1);
 	}
 `
 
@@ -80,7 +80,7 @@ func (video *Video) initGL() {
 	gl.EnableVertexAttribArray(posAttrib)
 	gl.EnableVertexAttribArray(texCoordAttr)
 
-	gl.Uniform3iv(paletteLoc, 64, nes.ShaderPalette)
+	gl.Uniform3iv(paletteLoc, len(nes.ShaderPalette), nes.ShaderPalette)
 
 	vertVBO := GenBuffer()
 	checkGLError()
