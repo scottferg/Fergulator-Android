@@ -20,6 +20,7 @@ public class Engine {
     public static native boolean loadRom(byte[] bytes, String name);
     public static native void pauseEmulator();
     public static native void enableAudio(boolean enabled);
+    public static native void saveBatteryRam();
     public static native void saveState();
     public static native void loadState();
     private static native void keyEvent(int key, int down, int player);

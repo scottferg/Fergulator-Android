@@ -99,6 +99,17 @@ func Java_com_ferg_afergulator_Engine_enableAudio(env *C.JNIEnv, clazz C.jclass,
 	nes.AudioEnabled = enabled == C.JNI_TRUE
 }
 
+//export Java_com_ferg_afergulator_Engine_saveBatteryRam
+func Java_com_ferg_afergulator_Engine_saveBatteryRam(env *C.JNIEnv, clazz C.jclass) {
+	defer func() {
+		if err := recover(); err != nil {
+			log.Printf("panic: init: %v\n", err)
+		}
+	}()
+
+    nes.SaveBatteryFile()
+}
+
 //export Java_com_ferg_afergulator_Engine_saveState
 func Java_com_ferg_afergulator_Engine_saveState(env *C.JNIEnv, clazz C.jclass) {
 	defer func() {

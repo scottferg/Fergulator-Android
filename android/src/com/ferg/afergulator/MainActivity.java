@@ -54,6 +54,7 @@ public class MainActivity extends Activity implements ActionBar.OnNavigationList
         super.onPause();
 
         Engine.pauseEmulator();
+        Engine.saveBatteryRam();
         mGameView.onPause();
     }
 
