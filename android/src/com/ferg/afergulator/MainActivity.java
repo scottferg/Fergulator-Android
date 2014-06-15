@@ -1,24 +1,15 @@
 package com.ferg.afergulator;
 
-import android.annotation.SuppressLint;
-import android.app.*;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.hardware.input.InputManager;
+import android.app.ActionBar;
+import android.app.Activity;
 import android.os.Bundle;
-import android.support.v4.app.DialogFragment;
 import android.view.*;
 import android.widget.*;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
 
 public class MainActivity extends Activity implements ActionBar.OnNavigationListener {
-
-    private static final String TAG = MainActivity.class.getSimpleName();
 
     private GameView   mGameView;
     private RomAdapter romAdapter;
