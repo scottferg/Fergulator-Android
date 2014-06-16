@@ -1,31 +1,40 @@
 package com.ferg.afergulator;
 
-import android.annotation.SuppressLint;
-import android.app.*;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.hardware.input.InputManager;
+import android.app.ActionBar;
+import android.app.Activity;
+import android.content.*;
+import android.content.res.Resources;
+import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.support.v4.app.DialogFragment;
 import android.view.*;
 import android.widget.*;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.*;
+import java.util.Set;
+import java.util.prefs.Preferences;
+
+import butterknife.*;
+import timber.log.Timber;
 
 import com.ferg.afergulator.widget.ButtonNES;
 import com.ferg.afergulator.widget.ButtonNES.Key;
 
 public class MainActivity extends Activity implements ActionBar.OnNavigationListener {
 
-    private static final String TAG = MainActivity.class.getSimpleName();
+    private static final int FILE_SELECT_CODE = 0xc001;
 
-    private GameView   mGameView;
-    private RomAdapter romAdapter;
+    static {
+        if (BuildConfig.DEBUG)
+            Timber.plant(new Timber.DebugTree());
+    }
+
+    @InjectView(R.id.gameView) GameView mGameView;
+
+    private RomAdapter        romAdapter;
+    private SharedPreferences mRecentPrefs;
 
     protected PowerManager.WakeLock mWakeLock;
 
@@ -36,21 +45,24 @@ public class MainActivity extends Activity implements ActionBar.OnNavigationList
         requestWindowFeature(Window.FEATURE_ACTION_BAR_OVERLAY);
 
         setContentView(R.layout.main);
+        ButterKnife.inject(this);
 
-        getActionBar().setDisplayShowTitleEnabled(false);
+        mRecentPrefs = getSharedPreferences("recent", MODE_PRIVATE);
 
-        findViewById(R.id.frameLayout).setOnClickListener(onLayoutClick);
-
-        romAdapter = new RomAdapter();
         getActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
-        getActionBar().setListNavigationCallbacks(romAdapter, this);
+        getActionBar().setDisplayShowTitleEnabled(false);
+        setSpinnerAdapter();
 
         final PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
 
         mWakeLock = pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK, "Fergulator");
         mWakeLock.acquire();
 
-        mGameView = (GameView) findViewById(R.id.gameView);
+    }
+
+    public void setSpinnerAdapter() {
+        romAdapter = new RomAdapter();
+        getActionBar().setListNavigationCallbacks(romAdapter, this);
     }
 
     @Override
@@ -92,12 +104,6 @@ public class MainActivity extends Activity implements ActionBar.OnNavigationList
         return super.onOptionsItemSelected(item);
     }
 
-    private View.OnClickListener onLayoutClick = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            toggleActionBar();
-        }
-    };
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
@@ -121,7 +127,8 @@ public class MainActivity extends Activity implements ActionBar.OnNavigationList
          return false;
      }
 
-    private void toggleActionBar() {
+    @OnClick(R.id.frameLayout)
+    public void toggleActionBar() {
         if (getActionBar().isShowing()) {
             getActionBar().hide();
             mGameView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE);
@@ -133,17 +140,21 @@ public class MainActivity extends Activity implements ActionBar.OnNavigationList
 
     private class RomAdapter extends ArrayAdapter<String> {
 
-        public static final String SELECT_ROM = "Select ROM...";
+        int mHighlightColor;
 
         public RomAdapter() {
             super(MainActivity.this, R.layout.rom_spinner_item);
-            try {
-                String[] roms = getRoms();
-                add(SELECT_ROM);
-                addAll(roms);
-            } catch (IOException e) {
-                e.printStackTrace();
-                add("NO ROMS FOUND!");
+
+            mHighlightColor = getResources().getColor(android.R.color.holo_blue_light);
+
+            add("Select ROM:");
+            add("Browse...");
+
+            Set<String> recent = (mRecentPrefs.getAll() == null) ?
+                                 null : mRecentPrefs.getAll().keySet();
+
+            if (recent != null) {
+                addAll(recent);
             }
         }
 
@@ -151,19 +162,96 @@ public class MainActivity extends Activity implements ActionBar.OnNavigationList
         public View getDropDownView(int position, View convertView, ViewGroup parent) {
             TextView v = (TextView) super.getDropDownView(position, convertView, parent);
 
-            if (position == getActionBar().getSelectedNavigationIndex()) {
-                v.setTextColor(Integer.MAX_VALUE);
-            } else {
-                v.setTextColor(getResources().getColor(android.R.color.holo_blue_light));
-            }
-
-            v.setText(displayRomName(v.getText().toString()));
+            int i = getActionBar().getSelectedNavigationIndex();
+            v.setTextColor(position == i ? Color.WHITE : mHighlightColor);
 
             return v;
         }
+    }
 
-        private String[] getRoms() throws IOException {
-            return getAssets().list("roms");
+    @Override
+    public boolean onNavigationItemSelected(int itemPosition, long itemId) {
+        if (itemPosition == 0) return false;
+
+        if (itemPosition == 1) {
+            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+            intent.setType("*/*; application/zip");
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+
+            try {
+                startActivityForResult(Intent.createChooser(intent, "Select a NES or ZIP file:"), FILE_SELECT_CODE);
+            } catch (ActivityNotFoundException ex) {
+                // Potentially direct the user to the Market with a Dialog
+                Toast.makeText(this, "Please install a File Manager.", Toast.LENGTH_SHORT).show();
+            }
+
+            getActionBar().setSelectedNavigationItem(0);
+            return false;
+        }
+
+        Engine.pauseEmulator();
+
+        String rom = romAdapter.getItem(itemPosition);
+        String romUriString = mRecentPrefs.getString(rom, null);
+        if (romUriString != null) {
+            loadRom(Uri.parse(romUriString));
+        }
+
+        return false;
+    }
+
+    private void loadRom(Uri uri) {
+        Timber.d("Loading ROM: %s", uri);
+
+        String name = uri.getLastPathSegment();
+        if (name == null) return;
+
+        if (name.endsWith(".nes")) {
+            InputStream is = null;
+            try {
+                is = getContentResolver().openInputStream(uri);
+                if (mGameView.loadGame(is, name)) {
+                    toggleActionBar();
+                }
+            } catch (IOException e) {
+                Timber.e(e, "%s", e.getMessage());
+            } finally {
+                closeSilently(is);
+            }
+        } else if (name.endsWith(".zip")) {
+            Timber.d("ZIP File: TODO");
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == FILE_SELECT_CODE && resultCode == RESULT_OK) {
+
+            Uri uri = data.getData();
+            if (uri != null) {
+
+                String name = uri.getLastPathSegment();
+
+                if (name.endsWith(".zip")) {
+                    Toast.makeText(this, "Zip files not implemented yet.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                if (!name.endsWith(".nes")) {
+                    Toast.makeText(this, "Only NES roms are accepted right now (*.nes)", Toast.LENGTH_LONG).show();
+                    return;
+                }
+
+                name = displayRomName(name);
+
+                mRecentPrefs.edit().putString(name, uri.toString()).apply();
+
+                romAdapter.remove(name);
+                romAdapter.insert(name, 2);
+                getActionBar().setSelectedNavigationItem(2);
+            }
         }
     }
 
@@ -174,33 +262,12 @@ public class MainActivity extends Activity implements ActionBar.OnNavigationList
         return rom;
     }
 
-    @Override
-    public boolean onNavigationItemSelected(int itemPosition, long itemId) {
-        if (itemPosition == 0)
-            return false;
-
-        Engine.pauseEmulator();
-
-        String rom = romAdapter.getItem(itemPosition);
-
-        InputStream is = null;
-        try {
-            is = getAssets().open("roms/" + rom);
-            if (mGameView.loadGame(is, rom)) {
-                toggleActionBar();
-                return true;
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+    static void closeSilently(Closeable aCloseable) {
+        if (aCloseable != null) {
+            try {
+                aCloseable.close();
+            } catch (IOException ignored) { }
         }
-        return false;
     }
+
 }

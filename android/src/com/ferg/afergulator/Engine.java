@@ -1,6 +1,5 @@
 package com.ferg.afergulator;
 
-import com.ferg.afergulator.tools.Audio;
 import com.ferg.afergulator.widget.ButtonNES;
 
 public class Engine {
@@ -91,7 +90,6 @@ public class Engine {
     }
 
     static void playSamples(short[] samples) {
-        Audio.play(samples);
     }
 
 }
