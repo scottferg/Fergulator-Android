@@ -13,3 +13,7 @@ You will need a local environment for the [goandroid](https://github.com/eliasna
 From the top-level directory:
 
         $ ./build
+
+## APK
+
+APK download is available [here](https://github.com/scottferg/Fergulator-Android/releases).
