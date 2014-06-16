@@ -95,7 +95,9 @@ public class ButtonNES extends Button implements View.OnTouchListener {
             case KeyEvent.KEYCODE_DPAD_DOWN:
                 return Key.DOWN;
             case 108:
+            case 105:
                 return Key.START;
+            case 104:
             case 4:
                 return Key.SELECT;
             case 96:

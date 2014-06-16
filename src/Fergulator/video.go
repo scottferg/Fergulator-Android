@@ -39,7 +39,7 @@ const vertShaderSrcDef = `
 `
 
 const fragShaderSrcDef = `
-	precision mediump float;
+	precision highp float;
 	varying vec2 texCoord;
 	uniform sampler2D texture;
 	uniform ivec3 palette[64];

@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.hardware.input.InputManager;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.support.v4.app.DialogFragment;
 import android.view.*;
 import android.widget.*;
@@ -16,12 +17,17 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.ferg.afergulator.widget.ButtonNES;
+import com.ferg.afergulator.widget.ButtonNES.Key;
+
 public class MainActivity extends Activity implements ActionBar.OnNavigationListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
     private GameView   mGameView;
     private RomAdapter romAdapter;
+
+    protected PowerManager.WakeLock mWakeLock;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -38,6 +44,11 @@ public class MainActivity extends Activity implements ActionBar.OnNavigationList
         romAdapter = new RomAdapter();
         getActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
         getActionBar().setListNavigationCallbacks(romAdapter, this);
+
+        final PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+
+        mWakeLock = pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK, "Fergulator");
+        mWakeLock.acquire();
 
         mGameView = (GameView) findViewById(R.id.gameView);
     }
@@ -87,6 +98,28 @@ public class MainActivity extends Activity implements ActionBar.OnNavigationList
             toggleActionBar();
         }
     };
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        Key nesKey = ButtonNES.keyFromKeyCode(keyCode);
+        if (nesKey != null) {
+            Engine.buttonDown(nesKey);
+            return true;
+        }
+
+        return false;
+    }
+     
+     @Override
+     public boolean onKeyUp(int keyCode, KeyEvent event) {
+         Key nesKey = ButtonNES.keyFromKeyCode(keyCode);
+         if (nesKey != null) {
+             Engine.buttonUp(nesKey);
+             return true;
+         }
+
+         return false;
+     }
 
     private void toggleActionBar() {
         if (getActionBar().isShowing()) {
