@@ -3,18 +3,15 @@ package com.ferg.afergulator;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.content.*;
-import android.content.res.Resources;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.PowerManager;
-import android.support.v4.app.DialogFragment;
 import android.view.*;
 import android.widget.*;
 
 import java.io.*;
 import java.util.Set;
-import java.util.prefs.Preferences;
 
 import butterknife.*;
 import timber.log.Timber;
@@ -175,18 +172,17 @@ public class MainActivity extends Activity implements ActionBar.OnNavigationList
 
         if (itemPosition == 1) {
             Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-            intent.setType("*/*; application/zip");
+            intent.setType("*/*");
             intent.addCategory(Intent.CATEGORY_OPENABLE);
 
             try {
-                startActivityForResult(Intent.createChooser(intent, "Select a NES or ZIP file:"), FILE_SELECT_CODE);
+                startActivityForResult(Intent.createChooser(intent, "Select a NES rom:"), FILE_SELECT_CODE);
             } catch (ActivityNotFoundException ex) {
-                // Potentially direct the user to the Market with a Dialog
-                Toast.makeText(this, "Please install a File Manager.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "No file browser. =(", Toast.LENGTH_SHORT).show();
             }
 
             getActionBar().setSelectedNavigationItem(0);
-            return false;
+            return true;
         }
 
         Engine.pauseEmulator();
@@ -197,29 +193,31 @@ public class MainActivity extends Activity implements ActionBar.OnNavigationList
             loadRom(Uri.parse(romUriString));
         }
 
-        return false;
+        return true;
     }
 
     private void loadRom(Uri uri) {
         Timber.d("Loading ROM: %s", uri);
 
         String name = uri.getLastPathSegment();
-        if (name == null) return;
 
-        if (name.endsWith(".nes")) {
-            InputStream is = null;
-            try {
-                is = getContentResolver().openInputStream(uri);
-                if (mGameView.loadGame(is, name)) {
-                    toggleActionBar();
-                }
-            } catch (IOException e) {
-                Timber.e(e, "%s", e.getMessage());
-            } finally {
-                closeSilently(is);
-            }
-        } else if (name.endsWith(".zip")) {
+        if (name != null && name.endsWith(".zip")) {
             Timber.d("ZIP File: TODO");
+        }
+
+        InputStream is = null;
+        try {
+            is = getContentResolver().openInputStream(uri);
+            mGameView.loadGame(is, name);
+            toggleActionBar();
+        } catch (IOException e) {
+            Toast.makeText(this, "Invalid NES rom!", Toast.LENGTH_SHORT).show();
+            Timber.w(e, "Invalid NES rom!");
+            mRecentPrefs.edit().remove(name).apply();
+            romAdapter.remove(name);
+            getActionBar().setSelectedNavigationItem(0);
+        } finally {
+            closeSilently(is);
         }
     }
 
@@ -228,22 +226,9 @@ public class MainActivity extends Activity implements ActionBar.OnNavigationList
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == FILE_SELECT_CODE && resultCode == RESULT_OK) {
-
             Uri uri = data.getData();
             if (uri != null) {
-
                 String name = uri.getLastPathSegment();
-
-                if (name.endsWith(".zip")) {
-                    Toast.makeText(this, "Zip files not implemented yet.", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                if (!name.endsWith(".nes")) {
-                    Toast.makeText(this, "Only NES roms are accepted right now (*.nes)", Toast.LENGTH_LONG).show();
-                    return;
-                }
-
                 name = displayRomName(name);
 
                 mRecentPrefs.edit().putString(name, uri.toString()).apply();

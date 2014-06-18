@@ -48,9 +48,15 @@ public class GameView extends GLSurfaceView implements GLSurfaceView.Renderer {
     public boolean loadGame(InputStream is, String name) throws IOException {
         byte[] rom = ByteStreams.toByteArray(is);
         byte[] start = Arrays.copyOfRange(rom, 0, 3);
-        Timber.d("%s ROM: %s (%dk)", new String(start), name, rom.length / 1024);
+        String type = new String(start);
+        if (!"NES".equals(type))
+            throw new IOException("NES header not found!");
+
+        Timber.d("%s ROM: %s (%dk)", type, name, rom.length / 1024);
+
         boolean result = Engine.loadRom(rom, name);
         Timber.d("%s, loaded = %B", name, result);
+
         return result;
     }
 
