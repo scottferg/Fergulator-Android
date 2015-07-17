@@ -9,10 +9,6 @@ import android.os.PowerManager;
 import android.view.*;
 import android.widget.*;
 
-import com.google.android.glass.app.Card;
-import com.google.android.glass.widget.CardScrollAdapter;
-import com.google.android.glass.widget.CardScrollView;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -51,7 +47,7 @@ public class GameActivity extends Activity {
         String rom = getIntent().getStringExtra("rom");
         android.util.Log.i(TAG, "Loading: " + rom);
 
-        Engine.pauseEmulator();
+        // Nesdroid.PauseEmulator();
 
         InputStream is = null;
         try {
@@ -76,7 +72,7 @@ public class GameActivity extends Activity {
     protected void onPause() {
         super.onPause();
 
-        Engine.pauseEmulator();
+        // Nesdroid.PauseEmulator();
         mGameView.onPause();
     }
 

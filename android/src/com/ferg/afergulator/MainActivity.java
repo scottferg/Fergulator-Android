@@ -21,6 +21,7 @@ import timber.log.Timber;
 
 import com.ferg.afergulator.widget.ButtonNES;
 import com.ferg.afergulator.widget.ButtonNES.Key;
+import go.nesdroid.*;
 
 public class MainActivity extends Activity implements ActionBar.OnNavigationListener {
 
@@ -76,8 +77,6 @@ public class MainActivity extends Activity implements ActionBar.OnNavigationList
     protected void onPause() {
         super.onPause();
 
-        Engine.pauseEmulator();
-        Engine.saveBatteryRam();
         mGameView.onPause();
     }
 
@@ -92,10 +91,10 @@ public class MainActivity extends Activity implements ActionBar.OnNavigationList
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_nes_load:
-                Engine.loadState();
+                Nesdroid.LoadState();
                 return true;
             case R.id.menu_nes_save:
-                Engine.saveState();
+                Nesdroid.SaveState();
                 return true;
             case R.id.menu_nes_shutdown:
                 Toast.makeText(this, "power down not implemented yet", Toast.LENGTH_SHORT).show();
@@ -189,7 +188,7 @@ public class MainActivity extends Activity implements ActionBar.OnNavigationList
             return false;
         }
 
-        Engine.pauseEmulator();
+        Nesdroid.PauseEmulator();
 
         String rom = romAdapter.getItem(itemPosition);
         String romUriString = mRecentPrefs.getString(rom, null);

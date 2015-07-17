@@ -14,6 +14,7 @@ import javax.microedition.khronos.opengles.GL10;
 
 import com.google.common.io.ByteStreams;
 import timber.log.Timber;
+import go.nesdroid.*;
 
 /**
  * Created by Nick on 9/6/13.
@@ -40,8 +41,8 @@ public class GameView extends GLSurfaceView implements GLSurfaceView.Renderer {
         if (!isInEditMode()) {
 //            String cache = ctx.getExternalCacheDir().getAbsolutePath();
             File dl = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-            Timber.d("Engine.setFilePath(): %s", dl.getAbsoluteFile());
-            Engine.setFilePath(dl.getAbsolutePath());
+            Timber.d("Einitngine.setFilePath(): %s", dl.getAbsoluteFile());
+            Nesdroid.SetFilePath(dl.getAbsolutePath());
         }
     }
 
@@ -49,7 +50,7 @@ public class GameView extends GLSurfaceView implements GLSurfaceView.Renderer {
         byte[] rom = ByteStreams.toByteArray(is);
         byte[] start = Arrays.copyOfRange(rom, 0, 3);
         Timber.d("%s ROM: %s (%dk)", new String(start), name, rom.length / 1024);
-        boolean result = Engine.loadRom(rom, name);
+        boolean result = Nesdroid.LoadRom(rom, name);
         Timber.d("%s, loaded = %B", name, result);
         return result;
     }
@@ -71,17 +72,17 @@ public class GameView extends GLSurfaceView implements GLSurfaceView.Renderer {
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         Timber.i("Engine.init()...");
-        Engine.init();
+        Nesdroid.Start();
     }
 
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {
         Timber.i("Engine.resize(%d, %d)...", width, height);
-        Engine.resize(width, height);
+        Nesdroid.Resize(width, height);
     }
 
     @Override
     public void onDrawFrame(GL10 gl) {
-        Engine.drawFrame();
+        Nesdroid.DrawFrame();
     }
 }
