@@ -52,6 +52,7 @@ public class GameView extends GLSurfaceView implements GLSurfaceView.Renderer {
         Timber.d("%s ROM: %s (%dk)", new String(start), name, rom.length / 1024);
         boolean result = Nesdroid.LoadRom(rom, name);
         Timber.d("%s, loaded = %B", name, result);
+
         return result;
     }
 
